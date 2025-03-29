@@ -1,4 +1,3 @@
-// src/pages/Login.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; 
 import { Mail, Key } from "lucide-react";
@@ -26,7 +25,8 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/users/login", {
+      // Usar la URL desde la variable de entorno
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ correo: email, pase: password }),
@@ -56,7 +56,7 @@ export default function Login() {
       case "USUARIO":
         navigate("/Usuario");
         break;
-        case "ADMIN":
+      case "ADMIN":
         navigate("/Admin");
         break;
       default:
