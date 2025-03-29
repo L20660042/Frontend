@@ -10,7 +10,7 @@ import AdminDashboard from "./pages/Admin";
 
 function App() {
   return (
-    <Router>
+    <Router basename="/Frontend">
       <Routes>
         {/* Rutas públicas */}
         <Route path="/" element={<Welcome />} />
