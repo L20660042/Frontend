@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "my-frontend",
+			"path": "."
+		},
+		{
+			"name": "NUEVO3",
+			"path": "../../GitHub/NUEVO3"
+		},
+		{
+			"name": "backend",
+			"path": "../backend"
+		}
+	],
+	"settings": {}
+}
