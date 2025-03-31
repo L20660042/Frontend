@@ -101,7 +101,7 @@ export default function Welcome() {
               </div>
 
               <img
-                src="/emociones.jpg"
+                 src={`${process.env.PUBLIC_URL}/emociones.jpg`}
                 width={550}
                 height={550}
                 alt="Análisis de Emociones"
