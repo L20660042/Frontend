@@ -19,7 +19,7 @@ const Profile = () => {
     if (!token) return;
 
     try {
-      const response = await fetch("http://localhost:3000/users/profile", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/users/profile`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

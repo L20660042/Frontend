@@ -12,7 +12,7 @@ export default function GestionarUsuarios() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:3000/users", {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
