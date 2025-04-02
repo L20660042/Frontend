@@ -1,91 +1,13 @@
-import React, { useState } from "react";
-import { BarChart3, LineChart, Smile, Frown, Brain, Menu, X } from "lucide-react";
+import React from "react";
+import { BarChart3, LineChart, Smile, Frown, Brain } from "lucide-react";
 import EmotionDemo from "../components/EmotionDemo";
 import { Link } from "react-router-dom";
-import Navbar from "../components/NavBar";
-
-const NavBar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between px-4">
-        <Navbar />
-        
-        <button 
-          className="md:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </div>
-      
-      {isOpen && (
-        <div className="md:hidden bg-background border-t">
-          <div className="container px-4 py-2 flex flex-col space-y-2">
-            <Link 
-              to="/" 
-              className="py-2 px-4 rounded-md hover:bg-accent"
-              onClick={() => setIsOpen(false)}
-            >
-              Inicio
-            </Link>
-            <Link 
-              to="#caracteristicas" 
-              className="py-2 px-4 rounded-md hover:bg-accent"
-              onClick={() => setIsOpen(false)}
-            >
-              Características
-            </Link>
-            <Link 
-              to="#demo" 
-              className="py-2 px-4 rounded-md hover:bg-accent"
-              onClick={() => setIsOpen(false)}
-            >
-              Demo
-            </Link>
-            {isLoggedIn ? (
-              <Link 
-                to="/logout" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsLoggedIn(false);
-                  setIsOpen(false);
-                }}
-                className="py-2 px-4 rounded-md hover:bg-accent"
-              >
-                Cerrar Sesión
-              </Link>
-            ) : (
-              <>
-                <Link 
-                  to="/login" 
-                  className="py-2 px-4 rounded-md hover:bg-accent"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Iniciar Sesión
-                </Link>
-                <Link 
-                  to="/register" 
-                  className="py-2 px-4 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Registrarse
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </header>
-  );
-};
+import Navbar from "../components/NavBar"; // Este es el Navbar que quieres usar
 
 export default function Welcome() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <NavBar />
+      <Navbar /> {/* Solo usamos el Navbar importado */}
 
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">

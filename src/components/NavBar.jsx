@@ -29,7 +29,7 @@ export default function NavBar() {
               Cómo Funciona
             </Link>
             <Link
-              to="#/"
+              to="/"
               className="text-sm font-medium hover:underline underline-offset-4"
             >
               Home
