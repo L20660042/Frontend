@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redireccionando...</title>
+    <title>404 Not Found</title>
     <script>
-        // Redirige a la ruta correcta dentro de la SPA
-        var path = window.location.pathname;
-        window.location.replace("/Frontend" + path);
+        // Redirigir a la página principal mientras se preserva la ruta
+        const redirectTo = window.location.pathname.replace('/Frontend', '');
+        window.location.replace(`/Frontend/${redirectTo}`);
     </script>
 </head>
 <body>
-    <h1>Redireccionando...</h1>
+    <p>If you are not redirected automatically, <a href="/Frontend/">click here</a>.</p>
 </body>
 </html>
