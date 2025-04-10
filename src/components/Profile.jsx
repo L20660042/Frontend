@@ -87,7 +87,7 @@ const Profile = () => {
     <div className="flex flex-col items-center text-center">
       <div className="relative mb-4">
         <img
-          src="/image/perfil.png"
+          src={`'${process.env.PUBLIC_URL}/image/perfil.png`}
           alt="Imagen de perfil"
           className="w-32 h-32 rounded-full object-cover"
         />
