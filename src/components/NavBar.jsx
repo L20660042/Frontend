@@ -9,7 +9,7 @@ export default function NavBar() {
         {/* Logo + Nombre alineado a la izquierda */}
         <div className="flex items-center gap-2 font-bold">
           <Brain className="h-6 w-6 text-blue-600" /> {/* Color azul como en la imagen */}
-          <span>Emocion IA</span>
+          <span>Emotired</span>
         </div>
 
         {/* Menú horizontal y botones alineados a la derecha */}

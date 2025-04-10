@@ -27,7 +27,7 @@ export default function AdminDashboard() {
             <div className="w-10 h-10 bg-white rounded-full overflow-hidden mr-3">
               <Brain className="w-full h-full text-blue-600" /> {/* Ícono de Brain */}
             </div>
-            <span className="text-base font-medium">EmotionSense</span> {/* Nombre ajustado */}
+            <span className="text-base font-medium">Emotired</span> {/* Nombre ajustado */}
           </div>
 
           {/* Menú hamburguesa */}

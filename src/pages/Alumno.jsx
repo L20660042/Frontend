@@ -43,7 +43,7 @@ export default function Dashboard() {
             <div className="w-10 h-10 bg-white rounded-full overflow-hidden mr-3">
               <Brain className="w-full h-full text-blue-600" />
             </div>
-            <span className="text-base font-medium">EmotionSense</span> {/* Ajustamos el tamaño de texto */}
+            <span className="text-base font-medium">Emotired</span> {/* Ajustamos el tamaño de texto */}
           </div>
 
           {/* Menú hamburguesa */}
