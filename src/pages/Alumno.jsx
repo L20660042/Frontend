@@ -113,16 +113,7 @@ export default function Dashboard() {
           {view === "profile" ? (
             <Profile />
           ) : view === "aplicacion" ? (
-            <div>
-              {/* CONTENIDO DE LA SECCIÓN APLICACIÓN */}
-              <h3 className="text-xl font-bold text-[rgb(31,65,155)] mb-4">
-                Bienvenido a la Aplicación
-              </h3>
-              <p className="text-gray-700">
-                Aquí puedes mostrar los datos o funcionalidades de tu aplicación.
-              </p>
-              {/* Puedes meter aquí un componente o más código */}
-            </div>
+            <EmotionUploader />
           ) : view === "uploadProject" ? (
             <UploadProject />
           ) : null}
