@@ -49,7 +49,7 @@ function EmotionUploader() {
     formData.append('user', userName); // Usa el nombre del usuario en lugar de un valor fijo
 
     try {
-      const res = await axios.post(`${process.env.REACT_APP_API_URL_IA}/emotion/upload`, formData);
+      const res = await axios.post(`${process.env.REACT_APP_API_URL_IA}/emotion/upload`, formData, { withCredentials: true });
       setResult(res.data);
     } catch (error) {
       console.error('Error al subir la imagen:', error.response || error.message);
