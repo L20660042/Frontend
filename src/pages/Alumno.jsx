@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 // Componentes que ya tienes creados
 import Profile from "../components/Profile";
 import UploadProject from "../components/UploadProject";
+import EmotionUploader from "../components/EmotionUploader";
 
 export default function Dashboard() {
   const [view, setView] = useState("profile"); // por default, muestra el perfil
