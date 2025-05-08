@@ -1,6 +1,5 @@
 import React from "react";
 import { BarChart3, LineChart, Smile, Frown, Brain } from "lucide-react";
-import EmotionDemo from "../components/EmotionDemo";
 import { Link } from "react-router-dom";
 import Navbar from "../components/NavBar"; // Este es el Navbar que quieres usar
 
@@ -134,7 +133,6 @@ export default function Welcome() {
             </div>
 
             <div className="mx-auto max-w-3xl mt-8">
-              <EmotionDemo />
             </div>
           </div>
         </section>
