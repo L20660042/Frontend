@@ -2,6 +2,7 @@
 import { useState } from "react"; // Importa useState
 import { Link } from "react-router-dom";
 import { Brain } from "lucide-react";
+import { Link as ScrollLink } from "react-scroll";
 
 export default function NavBar() {
   return (
