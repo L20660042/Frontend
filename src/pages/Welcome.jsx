@@ -1,12 +1,20 @@
 import React from "react";
-import { BarChart3, LineChart, Smile, Frown, Brain } from "lucide-react";
+import {
+  BarChart3,
+  LineChart,
+  Smile,
+  Frown,
+  Brain,
+  PenLine,
+  Palette,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import Navbar from "../components/NavBar"; // Este es el Navbar que quieres usar
+import Navbar from "../components/NavBar";
 
 export default function Welcome() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar /> {/* Solo usamos el Navbar importado */}
+      <Navbar />
 
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
@@ -18,7 +26,7 @@ export default function Welcome() {
                     Análisis emocional avanzado
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Nuestra plataforma utiliza inteligencia artificial para detectar y analizar emociones en texto e imágenes.
+                    Nuestra plataforma analiza emociones en texto, ortografía, imágenes y dibujos mediante inteligencia artificial avanzada.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -43,7 +51,7 @@ export default function Welcome() {
                 alt="Análisis de Emociones"
                 className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
                 onError={(e) => {
-                  e.target.onerror = null; 
+                  e.target.onerror = null;
                   e.target.src = "https://via.placeholder.com/550x550/3b82f6/ffffff?text=Emoci%C3%B3nIA";
                 }}
               />
@@ -60,7 +68,7 @@ export default function Welcome() {
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Análisis Emocional Avanzado</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
-                  Nuestra plataforma utiliza inteligencia artificial para detectar y analizar emociones en texto e imágenes.
+                  Nuestra plataforma utiliza inteligencia artificial para detectar y analizar emociones en texto, ortografía, imágenes y dibujos.
                 </p>
               </div>
             </div>
@@ -115,6 +123,26 @@ export default function Welcome() {
                   Modelos entrenados específicamente para el análisis emocional en contenido digital.
                 </p>
               </div>
+
+              <div className="flex flex-col items-center space-y-2 rounded-lg border p-6 shadow-sm">
+                <div className="rounded-full bg-primary/10 p-3">
+                  <PenLine className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Ortografía Emocional</h3>
+                <p className="text-center text-muted-foreground">
+                  Analiza el estilo y errores ortográficos para inferir emociones como ansiedad o inseguridad.
+                </p>
+              </div>
+
+              <div className="flex flex-col items-center space-y-2 rounded-lg border p-6 shadow-sm">
+                <div className="rounded-full bg-primary/10 p-3">
+                  <Palette className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold">Dibujos Emocionales</h3>
+                <p className="text-center text-muted-foreground">
+                  Detecta emociones en garabatos, trazos y colores presentes en dibujos.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -127,12 +155,26 @@ export default function Welcome() {
                   Prueba Nuestro Analizador de Emociones
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
-                  Ingresa algún texto a continuación para ver nuestro análisis de emociones en acción.
+                  Ingresa texto o sube una imagen (escritura a mano o dibujo) para analizar las emociones presentes.
                 </p>
               </div>
             </div>
 
-            <div className="mx-auto max-w-3xl mt-8">
+            <div className="mx-auto max-w-3xl mt-8 space-y-6">
+              <textarea
+                className="w-full p-4 border rounded-md"
+                placeholder="Escribe un comentario o texto aquí..."
+                rows={5}
+              ></textarea>
+
+              <div>
+                <label className="block mb-2 font-medium">Sube un dibujo o escritura escaneada:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-primary file:text-white hover:file:bg-primary/80"
+                />
+              </div>
             </div>
           </div>
         </section>
