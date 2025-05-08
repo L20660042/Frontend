@@ -1,3 +1,4 @@
+// NavBar.jsx
 import { useState } from "react"; // Importa useState
 import { Link } from "react-router-dom";
 import { Brain } from "lucide-react";

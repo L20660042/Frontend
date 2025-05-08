@@ -1,3 +1,4 @@
+// welcome.jsx
 import React from "react";
 import {
   PenLine,
@@ -136,6 +137,40 @@ export default function Welcome() {
                 <p className="text-center text-muted-foreground">
                   Reconoce gestos gráficos relacionados con emociones como agresividad, tristeza o alegría.
                 </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Cómo Funciona */}
+        <section id="como-funciona" className="w-full py-12 md:py-24 lg:py-32">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                  ¿Cómo Funciona?
+                </h2>
+                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
+                  Nuestro sistema de análisis utiliza técnicas avanzadas de inteligencia artificial que procesan tanto textos como imágenes. La IA examina errores ortográficos, patrones en la escritura y el estilo de los dibujos para determinar las emociones subyacentes.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Contacto */}
+        <section id="contacto" className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                  Contacto
+                </h2>
+                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
+                  Si tienes alguna pregunta o deseas más información sobre nuestro servicio, no dudes en contactarnos.
+                </p>
+                <p className="text-muted-foreground">Correo: <a href="mailto:l20660042@matehuala.tecnm.mx" className="text-primary">l20660042@matehuala.tecnm.mx</a></p>
+                <p className="text-muted-foreground">Teléfono: <a href="tel:+4881749435" className="text-primary">4881749435</a></p>
               </div>
             </div>
           </div>
