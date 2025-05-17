@@ -22,6 +22,11 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
     if (!validatePasswords()) {
       setError("Las contraseñas no coinciden");
       return;
@@ -35,7 +40,7 @@ export default function Register() {
         correo: email,
         pase: password,
         nombre: fullName,
-        rol: "USUARIO" // Puedes cambiar a "ADMIN" si quieres registrar admins
+        rol: "USUARIO" 
       });
 
       if (response.status === 201) {
