@@ -8,7 +8,6 @@ export default function GestionarUsuarios() {
   const [loading, setLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Función para obtener todos los usuarios
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -23,38 +22,32 @@ export default function GestionarUsuarios() {
     }
   };
 
-  // Manejar cambios en los campos editados
   const handleEditChange = (id, field, value) => {
-    setEditedUsers((prevEditedUsers) => ({
-      ...prevEditedUsers,
+    setEditedUsers((prev) => ({
+      ...prev,
       [id]: {
-        ...prevEditedUsers[id],
+        ...prev[id],
         [field]: value,
       },
     }));
   };
 
-  // Guardar cambios de un usuario
   const handleSave = async (id) => {
     try {
       const token = localStorage.getItem("token");
       const updates = editedUsers[id];
-      await axios.patch(
-        `${process.env.REACT_APP_API_URL}/users/${id}`,
-        updates,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.patch(`${process.env.REACT_APP_API_URL}/users/${id}`, updates, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      // Actualizar la lista de usuarios en la UI
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
+      setUsers((prev) =>
+        prev.map((user) =>
           user._id === id ? { ...user, ...updates } : user
         )
       );
 
-      // Limpiar los cambios guardados del estado de edición
-      setEditedUsers((prevEditedUsers) => {
-        const { [id]: _, ...rest } = prevEditedUsers;
+      setEditedUsers((prev) => {
+        const { [id]: _, ...rest } = prev;
         return rest;
       });
 
@@ -88,19 +81,12 @@ export default function GestionarUsuarios() {
         <thead>
           <tr>
             {Object.keys(users[0] || {}).map((key) => (
-              <th
-                key={key}
-                className="border-b-2 border-gray-300 text-left py-2"
-              >
+              <th key={key} className="border-b-2 border-gray-300 text-left py-2">
                 {key.toUpperCase()}
               </th>
             ))}
-            <th className="border-b-2 border-gray-300 text-left py-2">
-              CONTRASEÑA
-            </th>
-            <th className="border-b-2 border-gray-300 text-left py-2">
-              ACCIONES
-            </th>
+            <th className="border-b-2 border-gray-300 text-left py-2">CONTRASEÑA</th>
+            <th className="border-b-2 border-gray-300 text-left py-2">ACCIONES</th>
           </tr>
         </thead>
         <tbody>
@@ -108,29 +94,21 @@ export default function GestionarUsuarios() {
             <tr key={user._id}>
               {Object.entries(user).map(([key, value]) => (
                 <td key={key} className="py-2">
-                  {key === "role" ? (
+                  {key === "rol" ? (
                     <select
-                      value={
-                        editedUsers[user._id]?.[key] ?? value
-                      }
+                      value={editedUsers[user._id]?.[key] ?? value}
                       onChange={(e) =>
                         handleEditChange(user._id, key, e.target.value)
                       }
                       className="border border-gray-300 p-1 rounded"
                     >
-                      <option value="USER">Usuario</option>
+                      <option value="USUARIO">Usuario</option>
                       <option value="ADMIN">Administrador</option>
-                      <option value="DOCENTE">Docente</option>
-                      <option value="ALUMNO">Alumno</option>
-                      <option value="GTIV">GTIV</option>
-                      <option value="JEFECARRERA">Jefe de Carrera</option>
                     </select>
                   ) : (
                     <input
                       type="text"
-                      value={
-                        editedUsers[user._id]?.[key] ?? value
-                      }
+                      value={editedUsers[user._id]?.[key] ?? value}
                       onChange={(e) =>
                         handleEditChange(user._id, key, e.target.value)
                       }
@@ -143,11 +121,9 @@ export default function GestionarUsuarios() {
                 <input
                   type="password"
                   placeholder="Nueva contraseña"
-                  value={
-                    editedUsers[user._id]?.password || ""
-                  }
+                  value={editedUsers[user._id]?.pase || ""}
                   onChange={(e) =>
-                    handleEditChange(user._id, "password", e.target.value)
+                    handleEditChange(user._id, "pase", e.target.value)
                   }
                   className="w-full border border-gray-300 p-1 rounded"
                 />
