@@ -40,7 +40,7 @@ export default function GestionarUsuarios() {
       const token = localStorage.getItem("token");
       const updates = editedUsers[id];
       await axios.patch(
-        `http://localhost:3000/users/${id}`,
+        `${process.env.REACT_APP_API_URL}/users/${id}`,
         updates,
         { headers: { Authorization: `Bearer ${token}` } }
       );
