@@ -25,7 +25,7 @@ export default function EmotionUploader() {
   const fetchUserAnalyses = async () => {
     try {
       const userId = getUserId();
-      const response = await axios.get(`/api/emotion-analysis/user/${userId}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/emotion-analysis/analyze/${userId}`);
       if (response.data.success) {
         setAnalyses(response.data.data);
       }
