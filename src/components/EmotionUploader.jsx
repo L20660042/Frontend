@@ -42,14 +42,27 @@ export default function EmotionUploader() {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setImage(URL.createObjectURL(file));
-      setText('');
-      setEmotions(null);
-      setDominantEmotion(null);
-      setError(null);
+    if (!file) return;
+
+    // Validar tipo de archivo
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      setError("Solo se permiten imágenes JPEG o PNG");
+      return;
     }
+
+    // Validar tamaño (5MB máximo)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("La imagen no puede pesar más de 5MB");
+      return;
+    }
+
+    setImageFile(file);
+    setImage(URL.createObjectURL(file));
+    setText('');
+    setEmotions(null);
+    setDominantEmotion(null);
+    setError(null);
   };
 
   const analyzeImage = async () => {
@@ -63,36 +76,48 @@ export default function EmotionUploader() {
 
     try {
       const formData = new FormData();
-      formData.append('file', imageFile); // Cambiado de 'image' a 'file' para coincidir con FastAPI
-      formData.append('userId', getUserId());
+      formData.append('image', imageFile);
+      formData.append('user_id', getUserId());
 
-      console.log("Enviando imagen al servidor...");
+      console.log("Enviando imagen al microservicio...");
       const response = await axios.post(
-        `https://microservice-ia-production-b7cf.up.railway.app/analyze-image`,
+        'https://microservice-ia-production-b7cf.up.railway.app/analyze-image',
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json'
           },
-          timeout: 30000 // 30 segundos de timeout
+          timeout: 30000
         }
       );
 
-      console.log("Respuesta recibida:", response.data);
+      console.log("Respuesta del microservicio:", response.data);
       
       if (response.data.success) {
         setText(response.data.data.text);
         setEmotions(response.data.data.emotions);
-        setDominantEmotion(response.data.data.dominant_emotion); // Cambiado a dominant_emotion
+        setDominantEmotion(response.data.data.dominant_emotion);
         fetchAnalyses();
       } else {
         setError(response.data.error || "Error al analizar la imagen");
       }
     } catch (err) {
       console.error("Error en la solicitud:", err);
-      setError(err.response?.data?.error || 
-              err.message || 
-              "Error al conectar con el servidor");
+      console.error("Detalles del error:", err.response?.data);
+      
+      let errorMessage = "Error al procesar la imagen";
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 413) {
+        errorMessage = "La imagen es demasiado grande";
+      } else if (err.response?.status === 415) {
+        errorMessage = "Formato de imagen no soportado";
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -128,7 +153,7 @@ export default function EmotionUploader() {
 
           <input
             type="file"
-            accept="image/*"
+            accept="image/jpeg, image/png, image/jpg"
             onChange={handleImageChange}
             className="w-full p-2 border rounded"
             disabled={loading}
