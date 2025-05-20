@@ -63,6 +63,7 @@ export default function EmotionUploader() {
     try {
       const formData = new FormData();
       formData.append('image', imageFile);
+      formData.append('userId', getUserId());
 
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/emotion-analysis/analyze-image`,
@@ -88,6 +89,20 @@ export default function EmotionUploader() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getEmotionSummary = (dominantEmotion) => {
+    const emotionDescriptions = {
+      anger: "El texto muestra signos de enfado o frustración.",
+      disgust: "El texto expresa rechazo o aversión hacia algo.",
+      fear: "El texto refleja preocupación o miedo ante una situación.",
+      joy: "El texto transmite felicidad y emociones positivas.",
+      neutral: "El texto tiene un tono neutro sin emociones marcadas.",
+      sadness: "El texto expresa tristeza o melancolía.",
+      surprise: "El texto muestra asombro o sorpresa ante algo inesperado."
+    };
+    
+    return emotionDescriptions[dominantEmotion] || "No se pudo determinar una descripción para esta emoción.";
   };
 
   return (
@@ -142,6 +157,7 @@ export default function EmotionUploader() {
                   {dominantEmotion.charAt(0).toUpperCase() + dominantEmotion.slice(1)}
                 </h3>
                 <p className="text-sm text-gray-500">Emoción dominante</p>
+                <p className="mt-2 text-sm">{getEmotionSummary(dominantEmotion)}</p>
               </div>
 
               <div className="space-y-2">
@@ -161,7 +177,7 @@ export default function EmotionUploader() {
                           style={{ width: `${score * 100}%` }}
                         ></div>
                       </div>
-                      <span className="w-12 text-right">
+                      <span className="w-16 text-right">
                         {(score * 100).toFixed(1)}%
                       </span>
                     </div>
@@ -199,7 +215,10 @@ export default function EmotionUploader() {
                     className="w-full h-32 object-contain mb-2"
                   />
                 )}
-                <p className="text-sm line-clamp-2">{analysis.text}</p>
+                <p className="text-sm line-clamp-3">{analysis.text}</p>
+                <p className="text-xs text-gray-600 mt-2">
+                  {getEmotionSummary(analysis.dominantEmotion)}
+                </p>
               </div>
             ))}
           </div>
