@@ -32,10 +32,11 @@ export default function EmotionUploader() {
   const fetchAnalyses = async () => {
     try {
       const userId = getUserId();
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/emotion-analysis/history?userId=${userId}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/history?userId=${userId}`);
       setAnalyses(response.data);
     } catch (err) {
       console.error("Error al cargar análisis previos:", err);
+      setError("No se pudo cargar el historial de análisis");
     }
   };
 
@@ -62,36 +63,42 @@ export default function EmotionUploader() {
 
     try {
       const formData = new FormData();
-      formData.append('image', imageFile);
+      formData.append('file', imageFile); // Cambiado de 'image' a 'file' para coincidir con FastAPI
       formData.append('userId', getUserId());
 
+      console.log("Enviando imagen al servidor...");
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/emotion-analysis/analyze-image`,
+        `${process.env.REACT_APP_API_URL}/analyze-image`,
         formData,
         {
           headers: {
             'Content-Type': 'multipart/form-data'
-          }
+          },
+          timeout: 30000 // 30 segundos de timeout
         }
       );
 
+      console.log("Respuesta recibida:", response.data);
+      
       if (response.data.success) {
         setText(response.data.data.text);
         setEmotions(response.data.data.emotions);
-        setDominantEmotion(response.data.data.dominant_emotion);
+        setDominantEmotion(response.data.data.dominant_emotion); // Cambiado a dominant_emotion
         fetchAnalyses();
       } else {
         setError(response.data.error || "Error al analizar la imagen");
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Error al conectar con el servidor");
-      console.error("Error:", err);
+      console.error("Error en la solicitud:", err);
+      setError(err.response?.data?.error || 
+              err.message || 
+              "Error al conectar con el servidor");
     } finally {
       setLoading(false);
     }
   };
 
-  const getEmotionSummary = (dominantEmotion) => {
+  const getEmotionSummary = (emotion) => {
     const emotionDescriptions = {
       anger: "El texto muestra signos de enfado o frustración.",
       disgust: "El texto expresa rechazo o aversión hacia algo.",
@@ -102,7 +109,7 @@ export default function EmotionUploader() {
       surprise: "El texto muestra asombro o sorpresa ante algo inesperado."
     };
     
-    return emotionDescriptions[dominantEmotion] || "No se pudo determinar una descripción para esta emoción.";
+    return emotionDescriptions[emotion] || "No se pudo determinar una descripción para esta emoción.";
   };
 
   return (
@@ -124,40 +131,56 @@ export default function EmotionUploader() {
             accept="image/*"
             onChange={handleImageChange}
             className="w-full p-2 border rounded"
+            disabled={loading}
           />
 
           <button
             onClick={analyzeImage}
             disabled={!imageFile || loading}
             className={`w-full py-2 px-4 rounded font-medium ${
-              !imageFile || loading ? 'bg-gray-300' : 'bg-blue-600 text-white'
-            }`}
+              !imageFile || loading ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
+            } transition-colors`}
           >
-            {loading ? 'Analizando...' : 'Analizar Imagen'}
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Analizando...
+              </span>
+            ) : 'Analizar Imagen'}
           </button>
 
-          {error && <div className="text-red-500 p-2 rounded bg-red-50">{error}</div>}
+          {error && (
+            <div className="p-3 rounded bg-red-50 border border-red-200">
+              <p className="text-red-600 font-medium">Error:</p>
+              <p className="text-red-500">{error}</p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
           {text && (
-            <div className="bg-gray-50 p-4 rounded">
-              <h3 className="font-bold mb-2">Texto detectado:</h3>
-              <p className="whitespace-pre-line">{text}</p>
+            <div className="bg-gray-50 p-4 rounded border border-gray-200">
+              <h3 className="font-bold mb-2 text-gray-700">Texto detectado:</h3>
+              <p className="whitespace-pre-line text-gray-800">{text}</p>
             </div>
           )}
 
           {dominantEmotion && (
-            <div className="bg-white p-4 rounded shadow">
+            <div className="bg-white p-4 rounded shadow border border-gray-200">
               <div className="text-center mb-4">
                 <span className="text-5xl block mb-2">
                   {EMOTION_ICONS[dominantEmotion] || '❓'}
                 </span>
-                <h3 className="text-xl font-bold">
+                <h3 className="text-xl font-bold text-gray-800">
                   {dominantEmotion.charAt(0).toUpperCase() + dominantEmotion.slice(1)}
                 </h3>
                 <p className="text-sm text-gray-500">Emoción dominante</p>
-                <p className="mt-2 text-sm">{getEmotionSummary(dominantEmotion)}</p>
+                <p className="mt-2 text-sm text-gray-600">
+                  {getEmotionSummary(dominantEmotion)}
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -168,16 +191,16 @@ export default function EmotionUploader() {
                       <span className="w-8 text-xl">
                         {EMOTION_ICONS[emotion] || '❓'}
                       </span>
-                      <span className="w-32">
+                      <span className="w-32 text-gray-700">
                         {emotion.charAt(0).toUpperCase() + emotion.slice(1)}
                       </span>
-                      <div className="flex-1 bg-gray-200 rounded h-2.5">
+                      <div className="flex-1 bg-gray-200 rounded-full h-2.5">
                         <div
-                          className="h-2.5 rounded bg-blue-500"
+                          className="h-2.5 rounded-full bg-blue-500"
                           style={{ width: `${score * 100}%` }}
                         ></div>
                       </div>
-                      <span className="w-16 text-right">
+                      <span className="w-16 text-right text-gray-600 text-sm">
                         {(score * 100).toFixed(1)}%
                       </span>
                     </div>
@@ -189,17 +212,17 @@ export default function EmotionUploader() {
       </div>
 
       <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">Historial de Análisis</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Historial de Análisis</h2>
         {analyses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {analyses.map((analysis) => (
-              <div key={analysis._id} className="border rounded p-4">
+              <div key={analysis._id} className="border rounded p-4 bg-white hover:shadow-md transition-shadow">
                 <div className="flex items-start mb-2">
                   <span className="text-2xl mr-2">
                     {EMOTION_ICONS[analysis.dominantEmotion] || '❓'}
                   </span>
                   <div>
-                    <h4 className="font-medium">
+                    <h4 className="font-medium text-gray-800">
                       {analysis.dominantEmotion.charAt(0).toUpperCase() + 
                        analysis.dominantEmotion.slice(1)}
                     </h4>
@@ -212,10 +235,10 @@ export default function EmotionUploader() {
                   <img 
                     src={analysis.imageUrl} 
                     alt="Análisis previo" 
-                    className="w-full h-32 object-contain mb-2"
+                    className="w-full h-32 object-contain mb-2 border rounded"
                   />
                 )}
-                <p className="text-sm line-clamp-3">{analysis.text}</p>
+                <p className="text-sm text-gray-700 line-clamp-3">{analysis.text}</p>
                 <p className="text-xs text-gray-600 mt-2">
                   {getEmotionSummary(analysis.dominantEmotion)}
                 </p>
@@ -223,7 +246,10 @@ export default function EmotionUploader() {
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500">No hay análisis previos</p>
+          <div className="text-center py-8 border-2 border-dashed rounded-lg bg-gray-50">
+            <p className="text-gray-500">No hay análisis previos</p>
+            <p className="text-sm text-gray-400 mt-1">Analiza una imagen para ver resultados aquí</p>
+          </div>
         )}
       </div>
     </div>
