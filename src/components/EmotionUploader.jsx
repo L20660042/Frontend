@@ -1,50 +1,59 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const getUserId = () => {
   return localStorage.getItem('userId') || 'default-user-id';
 };
 
-const EMOTION_COLORS = {
-  anger: 'bg-red-100 text-red-800',
-  disgust: 'bg-green-100 text-green-800',
-  fear: 'bg-purple-100 text-purple-800',
-  joy: 'bg-yellow-100 text-yellow-800',
-  neutral: 'bg-gray-100 text-gray-800',
-  sadness: 'bg-blue-100 text-blue-800',
-  surprise: 'bg-pink-100 text-pink-800',
+const EMOTION_ICONS = {
+  anger: '😠',
+  disgust: '🤢',
+  fear: '😨',
+  joy: '😄',
+  neutral: '😐',
+  sadness: '😢',
+  surprise: '😮'
 };
 
-export default function EmotionAnalyzer() {
+export default function EmotionUploader() {
+  const [image, setImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [text, setText] = useState('');
+  const [emotions, setEmotions] = useState(null);
   const [dominantEmotion, setDominantEmotion] = useState(null);
-  const [emotionResults, setEmotionResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [analyses, setAnalyses] = useState([]);
-  const [activeTab, setActiveTab] = useState('analyze');
 
   useEffect(() => {
-    fetchUserAnalyses();
+    fetchAnalyses();
   }, []);
 
-  const fetchUserAnalyses = async () => {
+  const fetchAnalyses = async () => {
     try {
       const userId = getUserId();
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/emotion-analysis/history?userId=${userId}`
-      );
-      if (response.data) {
-        setAnalyses(response.data);
-      }
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/emotion-analysis/history?userId=${userId}`);
+      setAnalyses(response.data);
     } catch (err) {
       console.error("Error al cargar análisis previos:", err);
     }
   };
 
-  const analyzeText = async () => {
-    if (!text || text.trim().length === 0) {
-      setError("Por favor ingresa un texto primero");
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImage(URL.createObjectURL(file));
+      setText('');
+      setEmotions(null);
+      setDominantEmotion(null);
+      setError(null);
+    }
+  };
+
+  const analyzeImage = async () => {
+    if (!imageFile) {
+      setError("Por favor selecciona una imagen primero");
       return;
     }
 
@@ -52,18 +61,26 @@ export default function EmotionAnalyzer() {
     setError(null);
 
     try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/emotion-analysis/analyze`,
-        { text, userId: getUserId() }
+        `${process.env.REACT_APP_API_URL}/emotion-analysis/analyze-image`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
       );
 
       if (response.data.success) {
-        const { emotions, dominantEmotion } = response.data.data;
-        setEmotionResults(emotions);
-        setDominantEmotion(dominantEmotion);
-        fetchUserAnalyses();
+        setText(response.data.data.text);
+        setEmotions(response.data.data.emotions);
+        setDominantEmotion(response.data.data.dominant_emotion);
+        fetchAnalyses();
       } else {
-        setError(response.data.error || "Error al analizar el texto");
+        setError(response.data.error || "Error al analizar la imagen");
       }
     } catch (err) {
       setError(err.response?.data?.error || "Error al conectar con el servidor");
@@ -73,109 +90,79 @@ export default function EmotionAnalyzer() {
     }
   };
 
-  const getEmotionIcon = (emotion) => {
-    const icons = {
-      'joy': '😄',
-      'anger': '😠',
-      'sadness': '😢',
-      'fear': '😨',
-      'disgust': '🤢',
-      'surprise': '😮',
-      'neutral': '😐'
-    };
-    return icons[emotion.toLowerCase()] || '❓';
-  };
-
-  const normalizeEmotionName = (emotion) => {
-    return emotion.charAt(0).toUpperCase() + emotion.slice(1);
-  };
-
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6 text-center">Analizador de Emociones en Texto</h1>
+      <h1 className="text-2xl font-bold mb-6">Analizador de Emociones en Texto de Imágenes</h1>
 
-      <div className="flex border-b mb-6">
-        <button
-          className={`py-2 px-4 font-medium ${activeTab === 'analyze' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
-          onClick={() => setActiveTab('analyze')}
-        >
-          Analizar Texto
-        </button>
-        <button
-          className={`py-2 px-4 font-medium ${activeTab === 'history' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
-          onClick={() => setActiveTab('history')}
-        >
-          Historial
-        </button>
-      </div>
-
-      {activeTab === 'analyze' ? (
-        <div className="bg-white rounded-xl p-6 shadow-md border">
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ingresa el texto a analizar:
-            </label>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Escribe aquí tu texto en inglés para analizar las emociones..."
-            />
-            <p className="mt-1 text-sm text-gray-500">
-              {text.length} caracteres (máx. 2000)
-            </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="border-2 border-dashed rounded-lg p-4 flex items-center justify-center h-64">
+            {image ? (
+              <img src={image} alt="Preview" className="max-h-full max-w-full object-contain" />
+            ) : (
+              <span className="text-gray-400">Selecciona una imagen con texto</span>
+            )}
           </div>
 
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full p-2 border rounded"
+          />
+
           <button
-            onClick={analyzeText}
-            disabled={!text || loading}
-            className={`py-2 px-4 rounded font-medium w-full ${
-              !text || loading
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+            onClick={analyzeImage}
+            disabled={!imageFile || loading}
+            className={`w-full py-2 px-4 rounded font-medium ${
+              !imageFile || loading ? 'bg-gray-300' : 'bg-blue-600 text-white'
             }`}
           >
-            {loading ? 'Analizando...' : 'Analizar Emociones'}
+            {loading ? 'Analizando...' : 'Analizar Imagen'}
           </button>
 
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md">
-              {error}
+          {error && <div className="text-red-500 p-2 rounded bg-red-50">{error}</div>}
+        </div>
+
+        <div className="space-y-4">
+          {text && (
+            <div className="bg-gray-50 p-4 rounded">
+              <h3 className="font-bold mb-2">Texto detectado:</h3>
+              <p className="whitespace-pre-line">{text}</p>
             </div>
           )}
 
-          {dominantEmotion && emotionResults && (
-            <div className="mt-6 border-t pt-4">
-              <div className="mb-6 text-center">
-                <div className="text-5xl mb-2">
-                  {getEmotionIcon(dominantEmotion)}
-                </div>
-                <h4 className="text-2xl font-bold text-gray-800">
-                  {normalizeEmotionName(dominantEmotion)}
-                </h4>
-                <p className="text-sm text-gray-500">Emoción Dominante</p>
+          {dominantEmotion && (
+            <div className="bg-white p-4 rounded shadow">
+              <div className="text-center mb-4">
+                <span className="text-5xl block mb-2">
+                  {EMOTION_ICONS[dominantEmotion] || '❓'}
+                </span>
+                <h3 className="text-xl font-bold">
+                  {dominantEmotion.charAt(0).toUpperCase() + dominantEmotion.slice(1)}
+                </h3>
+                <p className="text-sm text-gray-500">Emoción dominante</p>
               </div>
 
-              <div className="space-y-3">
-                {Object.entries(emotionResults)
+              <div className="space-y-2">
+                {emotions && Object.entries(emotions)
                   .sort(([, a], [, b]) => b - a)
-                  .map(([emotion, percent]) => (
-                    <div key={emotion} className="flex items-center gap-3">
-                      <span className="w-8 text-center text-xl">
-                        {getEmotionIcon(emotion)}
+                  .map(([emotion, score]) => (
+                    <div key={emotion} className="flex items-center">
+                      <span className="w-8 text-xl">
+                        {EMOTION_ICONS[emotion] || '❓'}
                       </span>
-                      <span className="w-24">
-                        {normalizeEmotionName(emotion)}
+                      <span className="w-32">
+                        {emotion.charAt(0).toUpperCase() + emotion.slice(1)}
                       </span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2.5">
+                      <div className="flex-1 bg-gray-200 rounded h-2.5">
                         <div
-                          className={`h-2.5 rounded-full ${EMOTION_COLORS[emotion] || 'bg-blue-500'}`}
-                          style={{ width: `${percent * 100}%` }}
+                          className="h-2.5 rounded bg-blue-500"
+                          style={{ width: `${score * 100}%` }}
                         ></div>
                       </div>
-                      <span className="w-12 text-right font-medium">
-                        {(percent * 100).toFixed(1)}%
+                      <span className="w-12 text-right">
+                        {(score * 100).toFixed(1)}%
                       </span>
                     </div>
                   ))}
@@ -183,57 +170,43 @@ export default function EmotionAnalyzer() {
             </div>
           )}
         </div>
-      ) : (
-        <div className="bg-white rounded-xl p-6 shadow-md border">
-          <h3 className="text-xl font-bold mb-4">Tus Análisis Recientes</h3>
-          {analyses.length === 0 ? (
-            <p className="text-center text-gray-500 py-4">
-              No hay análisis previos disponibles
-            </p>
-          ) : (
-            <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto">
-              {analyses.map((analysis) => (
-                <div
-                  key={analysis._id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="text-3xl">
-                      {getEmotionIcon(analysis.dominantEmotion)}
-                    </span>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium text-lg">
-                          {normalizeEmotionName(analysis.dominantEmotion)}
-                        </h4>
-                        <span className="text-xs text-gray-500">
-                          {new Date(analysis.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="text-gray-600 mt-1 text-sm line-clamp-2">
-                        {analysis.text}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {Object.entries(analysis.emotions)
-                          .sort(([, a], [, b]) => b - a)
-                          .slice(0, 3)
-                          .map(([emotion, score]) => (
-                            <span
-                              key={emotion}
-                              className={`text-xs px-2 py-1 rounded-full ${EMOTION_COLORS[emotion] || 'bg-gray-100'}`}
-                            >
-                              {normalizeEmotionName(emotion)} {(score * 100).toFixed(0)}%
-                            </span>
-                          ))}
-                      </div>
-                    </div>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-bold mb-4">Historial de Análisis</h2>
+        {analyses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {analyses.map((analysis) => (
+              <div key={analysis._id} className="border rounded p-4">
+                <div className="flex items-start mb-2">
+                  <span className="text-2xl mr-2">
+                    {EMOTION_ICONS[analysis.dominantEmotion] || '❓'}
+                  </span>
+                  <div>
+                    <h4 className="font-medium">
+                      {analysis.dominantEmotion.charAt(0).toUpperCase() + 
+                       analysis.dominantEmotion.slice(1)}
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      {new Date(analysis.createdAt).toLocaleString()}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                {analysis.imageUrl && (
+                  <img 
+                    src={analysis.imageUrl} 
+                    alt="Análisis previo" 
+                    className="w-full h-32 object-contain mb-2"
+                  />
+                )}
+                <p className="text-sm line-clamp-2">{analysis.text}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500">No hay análisis previos</p>
+        )}
+      </div>
     </div>
   );
 }
