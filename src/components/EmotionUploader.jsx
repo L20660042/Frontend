@@ -68,7 +68,7 @@ export default function EmotionUploader() {
 
       console.log("Enviando imagen al servidor...");
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/analyze-image`,
+        `https://microservice-ia-production-b7cf.up.railway.app/analyze-image`,
         formData,
         {
           headers: {
