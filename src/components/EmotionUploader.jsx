@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const API_CONFIG = {
-  ML_SERVICE: process.env.REACT_APP_ML_API || 'https://microservice-ia-production-b7cf.up.railway.app/',
+  ML_SERVICE: process.env.REACT_APP_ML_API || 'https://microservice-ia-production-b7cf.up.railway.app',
   BACKEND: process.env.REACT_APP_BACKEND_API || 'https://backend-production-e954.up.railway.app'
 };
 
