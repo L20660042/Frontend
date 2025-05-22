@@ -6,7 +6,6 @@ const API_CONFIG = {
   BACKEND: process.env.REACT_APP_BACKEND_API || 'https://backend-production-e954.up.railway.app'
 };
 
-
 const EMOTION_ICONS = {
   anger: '😠',
   disgust: '🤢',
@@ -27,18 +26,26 @@ export default function EmotionUploader() {
   const [error, setError] = useState(null);
   const [analyses, setAnalyses] = useState([]);
   const [serviceStatus, setServiceStatus] = useState('checking');
+  const [selectedAnalysis, setSelectedAnalysis] = useState(null);
 
   useEffect(() => {
     checkMicroserviceStatus();
     loadHistory();
   }, []);
 
-  const loadHistory = () => {
+  const loadHistory = async () => {
     try {
+      // Primero intentamos cargar desde el backend
+      const response = await axios.get(`${API_CONFIG.BACKEND}/analysis/all`);
+      setAnalyses(response.data);
+      
+      // Guardamos en localStorage como caché
+      localStorage.setItem('emotionAnalyses', JSON.stringify(response.data));
+    } catch (e) {
+      console.error("Error loading history from backend:", e);
+      // Fallback a localStorage si el backend falla
       const saved = localStorage.getItem('emotionAnalyses');
       if (saved) setAnalyses(JSON.parse(saved));
-    } catch (e) {
-      console.error("Error loading history:", e);
     }
   };
 
@@ -81,6 +88,7 @@ export default function EmotionUploader() {
     setEmotions(null);
     setDominantEmotion(null);
     setError(null);
+    setSelectedAnalysis(null);
   };
 
   const analyzeImage = async () => {
@@ -90,11 +98,11 @@ export default function EmotionUploader() {
     setError(null);
 
     try {
-      console.log("Iniciando análisis...");
       const formData = new FormData();
       formData.append('file', imageFile);
 
-      const response = await axios.post(
+      // 1. Enviar imagen al servicio de ML
+      const mlResponse = await axios.post(
         `${API_CONFIG.ML_SERVICE}/analyze-image`,
         formData,
         {
@@ -103,22 +111,42 @@ export default function EmotionUploader() {
         }
       );
 
-      if (!response.data?.success) {
-        throw new Error(response.data?.error || "Error en el análisis");
+      if (!mlResponse.data?.success) {
+        throw new Error(mlResponse.data?.error || "Error en el análisis");
       }
 
-      const { text, emotions, dominant_emotion } = response.data.data;
-      const newAnalysis = {
-        id: Date.now(),
-        date: new Date().toISOString(),
-        text,
-        emotions,
-        dominantEmotion: dominant_emotion,
-        imageUrl: image
-      };
+      const { text, emotions, dominant_emotion } = mlResponse.data.data;
 
-      updateAnalyses(newAnalysis);
-      displayResults(text, emotions, dominant_emotion);
+      // 2. Guardar en el backend
+      try {
+        const backendResponse = await axios.post(`${API_CONFIG.BACKEND}/analysis/save`, {
+          imageUrl: image,
+          text,
+          emotions,
+          dominantEmotion: dominant_emotion
+        });
+
+        // Actualizar el estado con la respuesta del backend
+        const newAnalysis = backendResponse.data;
+        setAnalyses(prev => [newAnalysis, ...prev.slice(0, 9)]);
+        
+        // Mostrar resultados
+        displayResults(text, emotions, dominant_emotion);
+      } catch (backendError) {
+        console.error("Error saving to backend:", backendError);
+        // Fallback a localStorage si el backend falla
+        const fallbackAnalysis = {
+          _id: Date.now().toString(),
+          imageUrl: image,
+          text,
+          emotions,
+          dominantEmotion: dominant_emotion,
+          date: new Date().toISOString()
+        };
+        setAnalyses(prev => [fallbackAnalysis, ...prev.slice(0, 9)]);
+        localStorage.setItem('emotionAnalyses', JSON.stringify([fallbackAnalysis, ...analyses.slice(0, 9)]));
+        displayResults(text, emotions, dominant_emotion);
+      }
 
     } catch (err) {
       handleError(err);
@@ -127,10 +155,26 @@ export default function EmotionUploader() {
     }
   };
 
-  const updateAnalyses = (newAnalysis) => {
-    const updated = [newAnalysis, ...analyses.slice(0, 9)];
-    setAnalyses(updated);
-    localStorage.setItem('emotionAnalyses', JSON.stringify(updated));
+  const loadAnalysis = async (id) => {
+    try {
+      const response = await axios.get(`${API_CONFIG.BACKEND}/analysis/${id}`);
+      setSelectedAnalysis(response.data);
+      
+      // Muestra los resultados en la UI
+      displayResults(
+        response.data.text,
+        response.data.emotions,
+        response.data.dominantEmotion
+      );
+      
+      // Si hay imagen, la cargamos
+      if (response.data.imageUrl) {
+        setImage(response.data.imageUrl);
+      }
+    } catch (err) {
+      console.error("Error loading analysis:", err);
+      setError("No se pudo cargar el análisis seleccionado");
+    }
   };
 
   const displayResults = (text, emotions, dominantEmotion) => {
@@ -289,7 +333,13 @@ export default function EmotionUploader() {
         {analyses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {analyses.map((analysis) => (
-              <div key={analysis.id} className="border rounded-md p-4 bg-white hover:shadow-md">
+              <div 
+                key={analysis._id} 
+                className={`border rounded-md p-4 bg-white hover:shadow-md cursor-pointer ${
+                  selectedAnalysis?._id === analysis._id ? 'ring-2 ring-blue-500' : ''
+                }`}
+                onClick={() => loadAnalysis(analysis._id)}
+              >
                 <div className="flex items-start mb-2">
                   <span className="text-2xl mr-2">
                     {EMOTION_ICONS[analysis.dominantEmotion]}
