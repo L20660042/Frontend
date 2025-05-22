@@ -27,6 +27,7 @@ export default function EmotionUploader() {
   const [analyses, setAnalyses] = useState([]);
   const [serviceStatus, setServiceStatus] = useState('checking');
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+  const [saveStatus, setSaveStatus] = useState(null);
 
   useEffect(() => {
     checkMicroserviceStatus();
@@ -35,17 +36,24 @@ export default function EmotionUploader() {
 
   const loadHistory = async () => {
     try {
-      // Primero intentamos cargar desde el backend
-      const response = await axios.get(`${API_CONFIG.BACKEND}/analysis/all`);
+      setLoading(true);
+      const response = await axios.get(`${API_CONFIG.BACKEND}/analysis/all`, {
+        timeout: 5000
+      });
       setAnalyses(response.data);
-      
-      // Guardamos en localStorage como caché
       localStorage.setItem('emotionAnalyses', JSON.stringify(response.data));
+      setSaveStatus('loaded');
     } catch (e) {
-      console.error("Error loading history from backend:", e);
-      // Fallback a localStorage si el backend falla
+      console.error("Error loading history:", e);
       const saved = localStorage.getItem('emotionAnalyses');
-      if (saved) setAnalyses(JSON.parse(saved));
+      if (saved) {
+        setAnalyses(JSON.parse(saved));
+        setSaveStatus('local');
+      } else {
+        setSaveStatus('error');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,7 +75,6 @@ export default function EmotionUploader() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validaciones
     if (!['image/jpeg', 'image/png'].includes(file.type)) {
       setError("Solo se aceptan JPEG o PNG");
       return;
@@ -89,6 +96,7 @@ export default function EmotionUploader() {
     setDominantEmotion(null);
     setError(null);
     setSelectedAnalysis(null);
+    setSaveStatus(null);
   };
 
   const analyzeImage = async () => {
@@ -96,12 +104,13 @@ export default function EmotionUploader() {
 
     setLoading(true);
     setError(null);
+    setSaveStatus(null);
 
     try {
+      // 1. Procesar imagen con ML
       const formData = new FormData();
       formData.append('file', imageFile);
 
-      // 1. Enviar imagen al servicio de ML
       const mlResponse = await axios.post(
         `${API_CONFIG.ML_SERVICE}/analyze-image`,
         formData,
@@ -117,24 +126,35 @@ export default function EmotionUploader() {
 
       const { text, emotions, dominant_emotion } = mlResponse.data.data;
 
-      // 2. Guardar en el backend
+      // 2. Guardar en backend
       try {
-        const backendResponse = await axios.post(`${API_CONFIG.BACKEND}/analysis/save`, {
-          imageUrl: image,
-          text,
-          emotions,
-          dominantEmotion: dominant_emotion
-        });
+        const backendResponse = await axios.post(
+          `${API_CONFIG.BACKEND}/analysis/save`,
+          {
+            imageUrl: image,
+            text,
+            emotions,
+            dominantEmotion: dominant_emotion
+          },
+          {
+            timeout: 10000,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
 
-        // Actualizar el estado con la respuesta del backend
+        // 3. Actualizar estado
         const newAnalysis = backendResponse.data;
         setAnalyses(prev => [newAnalysis, ...prev.slice(0, 9)]);
+        setSaveStatus('saved');
         
-        // Mostrar resultados
+        // 4. Mostrar resultados
         displayResults(text, emotions, dominant_emotion);
+        
       } catch (backendError) {
-        console.error("Error saving to backend:", backendError);
-        // Fallback a localStorage si el backend falla
+        console.error("Backend save error:", backendError);
+        // Fallback a localStorage
         const fallbackAnalysis = {
           _id: Date.now().toString(),
           imageUrl: image,
@@ -145,11 +165,13 @@ export default function EmotionUploader() {
         };
         setAnalyses(prev => [fallbackAnalysis, ...prev.slice(0, 9)]);
         localStorage.setItem('emotionAnalyses', JSON.stringify([fallbackAnalysis, ...analyses.slice(0, 9)]));
+        setSaveStatus('local');
         displayResults(text, emotions, dominant_emotion);
       }
 
     } catch (err) {
       handleError(err);
+      setSaveStatus('error');
     } finally {
       setLoading(false);
     }
@@ -157,23 +179,22 @@ export default function EmotionUploader() {
 
   const loadAnalysis = async (id) => {
     try {
-      const response = await axios.get(`${API_CONFIG.BACKEND}/analysis/${id}`);
+      setLoading(true);
+      const response = await axios.get(`${API_CONFIG.BACKEND}/analysis/${id}`, {
+        timeout: 5000
+      });
       setSelectedAnalysis(response.data);
-      
-      // Muestra los resultados en la UI
       displayResults(
         response.data.text,
         response.data.emotions,
         response.data.dominantEmotion
       );
-      
-      // Si hay imagen, la cargamos
-      if (response.data.imageUrl) {
-        setImage(response.data.imageUrl);
-      }
+      if (response.data.imageUrl) setImage(response.data.imageUrl);
     } catch (err) {
       console.error("Error loading analysis:", err);
-      setError("No se pudo cargar el análisis seleccionado");
+      setError("No se pudo cargar el análisis");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -184,7 +205,7 @@ export default function EmotionUploader() {
   };
 
   const handleError = (err) => {
-    console.error("Error completo:", err);
+    console.error("Error:", err);
     
     let errorMsg = "Error al procesar la imagen";
     if (err.response) {
@@ -211,26 +232,52 @@ export default function EmotionUploader() {
     return descriptions[emotion] || "Emoción no clasificada";
   };
 
+  const renderStatusBadge = () => {
+    if (!saveStatus) return null;
+    
+    const statusConfig = {
+      saved: { text: "Guardado en la nube", color: "bg-green-100 text-green-800" },
+      local: { text: "Guardado localmente", color: "bg-yellow-100 text-yellow-800" },
+      loaded: { text: "Datos cargados", color: "bg-blue-100 text-blue-800" },
+      error: { text: "Error al guardar", color: "bg-red-100 text-red-800" }
+    };
+
+    return (
+      <span className={`ml-2 px-2 py-1 text-xs rounded-full ${statusConfig[saveStatus].color}`}>
+        {statusConfig[saveStatus].text}
+      </span>
+    );
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {/* Status Indicator */}
-      <div className={`mb-4 p-3 rounded-md ${
-        serviceStatus === 'available' ? 'bg-green-50 border-green-200' :
-        serviceStatus === 'unavailable' ? 'bg-red-50 border-red-200' :
-        'bg-blue-50 border-blue-200'
-      } border`}>
-        <p className="font-medium">
-          Estado del servicio: 
-          <span className={`ml-2 ${
-            serviceStatus === 'available' ? 'text-green-600' :
-            serviceStatus === 'unavailable' ? 'text-red-600' :
-            'text-blue-600'
-          }`}>
-            {serviceStatus === 'available' ? 'Disponible' :
-             serviceStatus === 'unavailable' ? 'No disponible' :
-             'Verificando...'}
-          </span>
-        </p>
+      {/* Status Bars */}
+      <div className="flex flex-col gap-2 mb-4">
+        <div className={`p-3 rounded-md ${
+          serviceStatus === 'available' ? 'bg-green-50 border-green-200' :
+          serviceStatus === 'unavailable' ? 'bg-red-50 border-red-200' :
+          'bg-blue-50 border-blue-200'
+        } border`}>
+          <p className="font-medium">
+            Estado del servicio: 
+            <span className={`ml-2 ${
+              serviceStatus === 'available' ? 'text-green-600' :
+              serviceStatus === 'unavailable' ? 'text-red-600' :
+              'text-blue-600'
+            }`}>
+              {serviceStatus === 'available' ? 'Disponible' :
+              serviceStatus === 'unavailable' ? 'No disponible' :
+              'Verificando...'}
+            </span>
+          </p>
+        </div>
+        
+        {saveStatus && (
+          <div className="flex items-center p-3 rounded-md bg-gray-50 border border-gray-200">
+            <p className="font-medium">Estado de almacenamiento:</p>
+            {renderStatusBadge()}
+          </div>
+        )}
       </div>
 
       <h1 className="text-2xl font-bold mb-6">Analizador de Emociones en Texto</h1>
@@ -267,7 +314,15 @@ export default function EmotionUploader() {
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
           >
-            {loading ? 'Procesando...' : 'Analizar Imagen'}
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Procesando...
+              </span>
+            ) : 'Analizar Imagen'}
           </button>
 
           {error && (
@@ -281,7 +336,10 @@ export default function EmotionUploader() {
         <div className="space-y-4">
           {text && (
             <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-              <h3 className="font-bold mb-2">Texto detectado:</h3>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-bold">Texto detectado:</h3>
+                {saveStatus && renderStatusBadge()}
+              </div>
               <p className="whitespace-pre-line bg-white p-2 rounded">{text}</p>
             </div>
           )}
@@ -335,8 +393,8 @@ export default function EmotionUploader() {
             {analyses.map((analysis) => (
               <div 
                 key={analysis._id} 
-                className={`border rounded-md p-4 bg-white hover:shadow-md cursor-pointer ${
-                  selectedAnalysis?._id === analysis._id ? 'ring-2 ring-blue-500' : ''
+                className={`border rounded-md p-4 bg-white hover:shadow-md cursor-pointer transition-all ${
+                  selectedAnalysis?._id === analysis._id ? 'ring-2 ring-blue-500 scale-[1.02]' : ''
                 }`}
                 onClick={() => loadAnalysis(analysis._id)}
               >
@@ -347,7 +405,7 @@ export default function EmotionUploader() {
                   <div>
                     <h4 className="font-medium">
                       {analysis.dominantEmotion.charAt(0).toUpperCase() + 
-                       analysis.dominantEmotion.slice(1)}
+                      analysis.dominantEmotion.slice(1)}
                     </h4>
                     <p className="text-xs text-gray-500">
                       {new Date(analysis.date).toLocaleString()}
