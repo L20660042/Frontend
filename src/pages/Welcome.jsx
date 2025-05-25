@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { scroller } from "react-scroll";
 import {
   PenLine,
   Palette,
@@ -7,10 +9,23 @@ import {
   FileText,
   Eye,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import Navbar from "../components/NavBar";
 
 export default function Welcome() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const scrollTo = params.get("scrollTo");
+    if (scrollTo) {
+      scroller.scrollTo(scrollTo, {
+        smooth: true,
+        offset: -70, // Adjust for sticky navbar height
+        duration: 500,
+      });
+    }
+  }, [location]);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
@@ -26,16 +41,19 @@ export default function Welcome() {
                     Analiza emociones en ortografía y dibujos
                   </h1>
                   <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    Nuestra plataforma detecta emociones ocultas en la forma de escribir y dibujar. Usa inteligencia artificial para revelar estados como ansiedad, alegría, inseguridad o creatividad a partir de ortografía y trazos.
+                    Nuestra plataforma detecta emociones ocultas en la forma de
+                    escribir y dibujar. Usa inteligencia artificial para revelar
+                    estados como ansiedad, alegría, inseguridad o creatividad a
+                    partir de ortografía y trazos.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link
-                    to="#caracteristicas"
+                  <a
+                    href="#caracteristicas"
                     className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-primary px-8 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary/80"
                   >
                     Ver características
-                  </Link>
+                  </a>
                 </div>
               </div>
 
@@ -47,7 +65,8 @@ export default function Welcome() {
                 className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/550x550/3b82f6/ffffff?text=Emoci%C3%B3nIA";
+                  e.target.src =
+                    "https://via.placeholder.com/550x550/3b82f6/ffffff?text=Emoci%C3%B3nIA";
                 }}
               />
             </div>
@@ -55,7 +74,10 @@ export default function Welcome() {
         </section>
 
         {/* Características */}
-        <section id="caracteristicas" className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+        <section
+          id="caracteristicas"
+          className="w-full py-12 md:py-24 lg:py-32 bg-muted"
+        >
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -66,7 +88,9 @@ export default function Welcome() {
                   IA Emocional para Escritura y Dibujo
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
-                  Nuestra tecnología detecta señales emocionales en errores ortográficos, estilos de escritura, trazos, colores y formas presentes en dibujos.
+                  Nuestra tecnología detecta señales emocionales en errores
+                  ortográficos, estilos de escritura, trazos, colores y formas
+                  presentes en dibujos.
                 </p>
               </div>
             </div>
@@ -79,7 +103,8 @@ export default function Welcome() {
                 </div>
                 <h3 className="text-xl font-bold">Ortografía emocional</h3>
                 <p className="text-center text-muted-foreground">
-                  Analiza errores y estilo de escritura para inferir emociones como estrés, inseguridad o urgencia.
+                  Analiza errores y estilo de escritura para inferir emociones
+                  como estrés, inseguridad o urgencia.
                 </p>
               </div>
 
@@ -90,7 +115,8 @@ export default function Welcome() {
                 </div>
                 <h3 className="text-xl font-bold">Dibujos emocionales</h3>
                 <p className="text-center text-muted-foreground">
-                  Detecta emociones en trazos, colores, presión y formas en dibujos y garabatos.
+                  Detecta emociones en trazos, colores, presión y formas en
+                  dibujos y garabatos.
                 </p>
               </div>
 
@@ -101,7 +127,8 @@ export default function Welcome() {
                 </div>
                 <h3 className="text-xl font-bold">IA especializada</h3>
                 <p className="text-center text-muted-foreground">
-                  Algoritmos entrenados en psicología gráfica y escritura para interpretar estados mentales.
+                  Algoritmos entrenados en psicología gráfica y escritura para
+                  interpretar estados mentales.
                 </p>
               </div>
 
@@ -112,7 +139,8 @@ export default function Welcome() {
                 </div>
                 <h3 className="text-xl font-bold">Reportes visuales</h3>
                 <p className="text-center text-muted-foreground">
-                  Obtén gráficas y resúmenes visuales que muestran las emociones detectadas en tus textos o dibujos.
+                  Obtén gráficas y resúmenes visuales que muestran las emociones
+                  detectadas en tus textos o dibujos.
                 </p>
               </div>
 
@@ -123,7 +151,8 @@ export default function Welcome() {
                 </div>
                 <h3 className="text-xl font-bold">Análisis de manuscritos</h3>
                 <p className="text-center text-muted-foreground">
-                  Escanea documentos escritos a mano para detectar señales emocionales y patrones gráficos.
+                  Escanea documentos escritos a mano para detectar señales
+                  emocionales y patrones gráficos.
                 </p>
               </div>
 
@@ -134,7 +163,8 @@ export default function Welcome() {
                 </div>
                 <h3 className="text-xl font-bold">Evaluación gráfica</h3>
                 <p className="text-center text-muted-foreground">
-                  Reconoce gestos gráficos relacionados con emociones como agresividad, tristeza o alegría.
+                  Reconoce gestos gráficos relacionados con emociones como
+                  agresividad, tristeza o alegría.
                 </p>
               </div>
             </div>
@@ -150,7 +180,11 @@ export default function Welcome() {
                   ¿Cómo Funciona?
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
-                  Nuestro sistema de análisis utiliza técnicas avanzadas de inteligencia artificial que procesan tanto textos como imágenes. La IA examina errores ortográficos, patrones en la escritura y el estilo de los dibujos para determinar las emociones subyacentes.
+                  Nuestro sistema de análisis utiliza técnicas avanzadas de
+                  inteligencia artificial que procesan tanto textos como
+                  imágenes. La IA examina errores ortográficos, patrones en la
+                  escritura y el estilo de los dibujos para determinar las
+                  emociones subyacentes.
                 </p>
               </div>
             </div>
@@ -158,7 +192,10 @@ export default function Welcome() {
         </section>
 
         {/* Contacto */}
-        <section id="contacto" className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+        <section
+          id="contacto"
+          className="w-full py-12 md:py-24 lg:py-32 bg-muted"
+        >
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -166,10 +203,24 @@ export default function Welcome() {
                   Contacto
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
-                  Si tienes alguna pregunta o deseas más información sobre nuestro servicio, no dudes en contactarnos.
+                  Si tienes alguna pregunta o deseas más información sobre
+                  nuestro servicio, no dudes en contactarnos.
                 </p>
-                <p className="text-muted-foreground">Correo: <a href="mailto:l20660042@matehuala.tecnm.mx" className="text-primary">l20660042@matehuala.tecnm.mx</a></p>
-                <p className="text-muted-foreground">Teléfono: <a href="tel:+4881749435" className="text-primary">4881749435</a></p>
+                <p className="text-muted-foreground">
+                  Correo:{" "}
+                  <a
+                    href="mailto:l20660042@matehuala.tecnm.mx"
+                    className="text-primary"
+                  >
+                    l20660042@matehuala.tecnm.mx
+                  </a>
+                </p>
+                <p className="text-muted-foreground">
+                  Teléfono:{" "}
+                  <a href="tel:+4881749435" className="text-primary">
+                    4881749435
+                  </a>
+                </p>
               </div>
             </div>
           </div>
@@ -178,3 +229,4 @@ export default function Welcome() {
     </div>
   );
 }
+

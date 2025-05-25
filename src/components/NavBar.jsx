@@ -1,8 +1,6 @@
-// NavBar.jsx
-import { useState } from "react"; // Importa useState
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Brain } from "lucide-react";
-import { Link as ScrollLink } from "react-scroll";
 
 export default function NavBar() {
   return (
@@ -10,7 +8,7 @@ export default function NavBar() {
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         {/* Logo + Nombre alineado a la izquierda */}
         <div className="flex items-center gap-2 font-bold">
-          <Brain className="h-6 w-6 text-blue-600" /> {/* Color azul como en la imagen */}
+          <Brain className="h-6 w-6 text-blue-600" />
           <span>Emotired</span>
         </div>
 
@@ -19,13 +17,13 @@ export default function NavBar() {
           {/* Menú horizontal solo en pantallas grandes */}
           <nav className="hidden md:flex gap-6">
             <Link
-              to="#caracteristicas"
+              to="/?scrollTo=caracteristicas"
               className="text-sm font-medium hover:underline underline-offset-4"
             >
               Características
             </Link>
             <Link
-              to="#como-funciona"
+              to="/?scrollTo=como-funciona"
               className="text-sm font-medium hover:underline underline-offset-4"
             >
               Cómo Funciona
@@ -34,10 +32,10 @@ export default function NavBar() {
               to="/"
               className="text-sm font-medium hover:underline underline-offset-4"
             >
-              Home
+              Inicio
             </Link>
             <Link
-              to="#contacto"
+              to="/?scrollTo=contacto"
               className="text-sm font-medium hover:underline underline-offset-4"
             >
               Contacto
@@ -99,28 +97,28 @@ function MobileMenu() {
       {isOpen && (
         <div className="absolute top-16 right-4 w-48 bg-white border border-gray-200 rounded-md shadow-md p-4 flex flex-col gap-4">
           <Link
-            to="#caracteristicas"
+            to="/?scrollTo=caracteristicas"
             onClick={() => setIsOpen(false)}
             className="text-sm font-medium hover:underline"
           >
             Características
           </Link>
           <Link
-            to="#como-funciona"
+            to="/?scrollTo=como-funciona"
             onClick={() => setIsOpen(false)}
             className="text-sm font-medium hover:underline"
           >
             Cómo Funciona
           </Link>
           <Link
-            to="#/"
+            to="/"
             onClick={() => setIsOpen(false)}
             className="text-sm font-medium hover:underline"
           >
-            Home
+            Inicio
           </Link>
           <Link
-            to="#contacto"
+            to="/?scrollTo=contacto"
             onClick={() => setIsOpen(false)}
             className="text-sm font-medium hover:underline"
           >
