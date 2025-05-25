@@ -73,7 +73,7 @@ export default function EmotionUploader() {
   const getSaveEndpoint = () => {
     return mode === "text"
       ? `${API_CONFIG.BACKEND}/analysis/save`
-      : `${API_CONFIG.BACKEND}/drawing-analysis/save2`;
+      : `${API_CONFIG.BACKEND}/drawing-analysis/save`;
   };
 
   const analyzeImage = async () => {
