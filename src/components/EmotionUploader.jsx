@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const API_CONFIG = {
-  ML_SERVICE: process.env.REACT_APP_ML_API || 'https://web-production-7a2d.up.railway.app',
+  ML_SERVICE_TEXT: process.env.REACT_APP_ML_API || 'https://web-production-7a2d.up.railway.app',
+  ML_SERVICE_DRAWING: 'https://serviciodibujo-production.up.railway.app',
   BACKEND: process.env.REACT_APP_BACKEND_API || 'https://backend-production-e954.up.railway.app'
 };
 
@@ -17,6 +18,8 @@ const EMOTION_ICONS = {
 };
 
 export default function EmotionUploader() {
+  const [mode, setMode] = useState('text'); // 'text' or 'drawing'
+
   const [image, setImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [text, setText] = useState('');
@@ -32,14 +35,18 @@ export default function EmotionUploader() {
   useEffect(() => {
     checkMicroserviceStatus();
     loadHistory();
-  }, []);
+    resetResults();
+  }, [mode]);
+
+  const getAnalysisEndpoint = () => {
+    if (mode === 'text') return `${API_CONFIG.ML_SERVICE_TEXT}/analyze-image`;
+    else if (mode === 'drawing') return `${API_CONFIG.ML_SERVICE_DRAWING}/analyze-drawing`;
+  };
 
   const loadHistory = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_CONFIG.BACKEND}/analysis/all`, {
-        timeout: 5000
-      });
+      const response = await axios.get(`${API_CONFIG.BACKEND}/analysis/all`, { timeout: 5000 });
       setAnalyses(response.data);
       localStorage.setItem('emotionAnalyses', JSON.stringify(response.data));
       setSaveStatus('loaded');
@@ -60,9 +67,8 @@ export default function EmotionUploader() {
   const checkMicroserviceStatus = async () => {
     try {
       setServiceStatus('checking');
-      const res = await axios.get(`${API_CONFIG.ML_SERVICE}/health`, {
-        timeout: 5000
-      });
+      const url = mode === 'text' ? API_CONFIG.ML_SERVICE_TEXT : API_CONFIG.ML_SERVICE_DRAWING;
+      const res = await axios.get(`${url}/health`, { timeout: 5000 });
       setServiceStatus(res.data.model_loaded ? 'available' : 'loading');
     } catch (err) {
       console.error("Status check failed:", err);
@@ -81,7 +87,7 @@ export default function EmotionUploader() {
     }
 
     if (file.size > 3 * 1024 * 1024) {
-      setError(`Imagen demasiado grande (${(file.size/1024/1024).toFixed(1)}MB). Máx: 3MB`);
+      setError(`Imagen demasiado grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Máx: 3MB`);
       return;
     }
 
@@ -107,68 +113,68 @@ export default function EmotionUploader() {
     setSaveStatus(null);
 
     try {
-      // 1. Procesar imagen con ML
       const formData = new FormData();
       formData.append('file', imageFile);
 
-      const mlResponse = await axios.post(
-        `${API_CONFIG.ML_SERVICE}/analyze-image`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          timeout: 30000
-        }
-      );
+      const endpoint = getAnalysisEndpoint();
+
+      const mlResponse = await axios.post(endpoint, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 30000,
+      });
 
       if (!mlResponse.data?.success) {
         throw new Error(mlResponse.data?.error || "Error en el análisis");
       }
 
-      const { text, emotions, dominant_emotion } = mlResponse.data.data;
+      let textResult = '';
+      if (mode === 'text') {
+        textResult = mlResponse.data.data.text;
+      }
 
-      // 2. Guardar en backend
+      const emotionsResult = mlResponse.data.data.emotions;
+      const dominantResult = mlResponse.data.data.dominant_emotion;
+
       try {
         const backendResponse = await axios.post(
           `${API_CONFIG.BACKEND}/analysis/save`,
           {
             imageUrl: image,
-            text,
-            emotions,
-            dominantEmotion: dominant_emotion
+            text: textResult,
+            emotions: emotionsResult,
+            dominantEmotion: dominantResult,
+            mode: mode,
           },
           {
             timeout: 10000,
-            headers: {
-              'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' },
           }
         );
 
-        // 3. Actualizar estado
         const newAnalysis = backendResponse.data;
         setAnalyses(prev => [newAnalysis, ...prev.slice(0, 9)]);
         setSaveStatus('saved');
-        
-        // 4. Mostrar resultados
-        displayResults(text, emotions, dominant_emotion);
-        
+
+        displayResults(textResult, emotionsResult, dominantResult);
       } catch (backendError) {
         console.error("Backend save error:", backendError);
-        // Fallback a localStorage
         const fallbackAnalysis = {
           _id: Date.now().toString(),
           imageUrl: image,
-          text,
-          emotions,
-          dominantEmotion: dominant_emotion,
-          date: new Date().toISOString()
+          text: textResult,
+          emotions: emotionsResult,
+          dominantEmotion: dominantResult,
+          date: new Date().toISOString(),
+          mode: mode,
         };
         setAnalyses(prev => [fallbackAnalysis, ...prev.slice(0, 9)]);
-        localStorage.setItem('emotionAnalyses', JSON.stringify([fallbackAnalysis, ...analyses.slice(0, 9)]));
+        localStorage.setItem(
+          'emotionAnalyses',
+          JSON.stringify([fallbackAnalysis, ...analyses.slice(0, 9)])
+        );
         setSaveStatus('local');
-        displayResults(text, emotions, dominant_emotion);
+        displayResults(textResult, emotionsResult, dominantResult);
       }
-
     } catch (err) {
       handleError(err);
       setSaveStatus('error');
@@ -181,14 +187,10 @@ export default function EmotionUploader() {
     try {
       setLoading(true);
       const response = await axios.get(`${API_CONFIG.BACKEND}/analysis/${id}`, {
-        timeout: 5000
+        timeout: 5000,
       });
       setSelectedAnalysis(response.data);
-      displayResults(
-        response.data.text,
-        response.data.emotions,
-        response.data.dominantEmotion
-      );
+      displayResults(response.data.text, response.data.emotions, response.data.dominantEmotion);
       if (response.data.imageUrl) setImage(response.data.imageUrl);
     } catch (err) {
       console.error("Error loading analysis:", err);
@@ -200,7 +202,7 @@ export default function EmotionUploader() {
 
   const deleteAnalysis = async (id, event) => {
     event.stopPropagation();
-    
+
     if (!window.confirm('¿Estás seguro de que quieres eliminar este análisis?')) {
       return;
     }
@@ -208,26 +210,22 @@ export default function EmotionUploader() {
     try {
       setLoading(true);
       await axios.delete(`${API_CONFIG.BACKEND}/analysis/${id}`, {
-        timeout: 5000
+        timeout: 5000,
       });
-      
-      // Actualiza el estado local
+
       setAnalyses(prev => prev.filter(item => item._id !== id));
-      
-      // Si el análisis eliminado es el que está seleccionado, limpia los resultados
+
       if (selectedAnalysis?._id === id) {
         setSelectedAnalysis(null);
         resetResults();
       }
-      
-      // Actualiza localStorage si es necesario
+
       const saved = localStorage.getItem('emotionAnalyses');
       if (saved) {
         const parsed = JSON.parse(saved);
         const updated = parsed.filter(item => item._id !== id);
         localStorage.setItem('emotionAnalyses', JSON.stringify(updated));
       }
-      
     } catch (err) {
       console.error("Error deleting analysis:", err);
       setError("No se pudo eliminar el análisis");
@@ -244,7 +242,7 @@ export default function EmotionUploader() {
 
   const handleError = (err) => {
     console.error("Error:", err);
-    
+
     let errorMsg = "Error al procesar la imagen";
     if (err.response) {
       errorMsg = err.response.data?.error || `Error ${err.response.status}`;
@@ -265,19 +263,19 @@ export default function EmotionUploader() {
       joy: "Transmite emociones positivas",
       neutral: "Tono neutro",
       sadness: "Expresa tristeza",
-      surprise: "Muestra asombro"
+      surprise: "Muestra asombro",
     };
     return descriptions[emotion] || "Emoción no clasificada";
   };
 
   const renderStatusBadge = () => {
     if (!saveStatus) return null;
-    
+
     const statusConfig = {
       saved: { text: "Guardado en la nube", color: "bg-green-100 text-green-800" },
       local: { text: "Guardado localmente", color: "bg-yellow-100 text-yellow-800" },
       loaded: { text: "Datos cargados", color: "bg-blue-100 text-blue-800" },
-      error: { text: "Error al guardar", color: "bg-red-100 text-red-800" }
+      error: { text: "Error al guardar", color: "bg-red-100 text-red-800" },
     };
 
     return (
@@ -289,27 +287,57 @@ export default function EmotionUploader() {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
+      {/* Mode Switch Buttons */}
+      <div className="flex space-x-4 mb-6">
+        <button
+          className={`px-4 py-2 rounded ${mode === 'text' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          onClick={() => setMode('text')}
+          disabled={loading}
+          type="button"
+        >
+          Analizar Escritura
+        </button>
+        <button
+          className={`px-4 py-2 rounded ${mode === 'drawing' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+          onClick={() => setMode('drawing')}
+          disabled={loading}
+          type="button"
+        >
+          Analizar Dibujo
+        </button>
+      </div>
+
       {/* Status Bars */}
       <div className="flex flex-col gap-2 mb-4">
-        <div className={`p-3 rounded-md ${
-          serviceStatus === 'available' ? 'bg-green-50 border-green-200' :
-          serviceStatus === 'unavailable' ? 'bg-red-50 border-red-200' :
-          'bg-blue-50 border-blue-200'
-        } border`}>
+        <div
+          className={`p-3 rounded-md ${
+            serviceStatus === 'available'
+              ? 'bg-green-50 border-green-200'
+              : serviceStatus === 'unavailable'
+              ? 'bg-red-50 border-red-200'
+              : 'bg-blue-50 border-blue-200'
+          } border`}
+        >
           <p className="font-medium">
-            Estado del servicio: 
-            <span className={`ml-2 ${
-              serviceStatus === 'available' ? 'text-green-600' :
-              serviceStatus === 'unavailable' ? 'text-red-600' :
-              'text-blue-600'
-            }`}>
-              {serviceStatus === 'available' ? 'Disponible' :
-              serviceStatus === 'unavailable' ? 'No disponible' :
-              'Verificando...'}
+            Estado del servicio:{' '}
+            <span
+              className={`ml-2 ${
+                serviceStatus === 'available'
+                  ? 'text-green-600'
+                  : serviceStatus === 'unavailable'
+                  ? 'text-red-600'
+                  : 'text-blue-600'
+              }`}
+            >
+              {serviceStatus === 'available'
+                ? 'Disponible'
+                : serviceStatus === 'unavailable'
+                ? 'No disponible'
+                : 'Verificando...'}
             </span>
           </p>
         </div>
-        
+
         {saveStatus && (
           <div className="flex items-center p-3 rounded-md bg-gray-50 border border-gray-200">
             <p className="font-medium">Estado de almacenamiento:</p>
@@ -318,20 +346,20 @@ export default function EmotionUploader() {
         )}
       </div>
 
-      <h1 className="text-2xl font-bold mb-6">Analizador de Emociones en Texto</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        {mode === 'text' ? 'Analizador de Emociones en Texto' : 'Analizador de Emociones en Dibujo'}
+      </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Upload Section */}
         <div className="space-y-4">
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 flex items-center justify-center h-64 bg-gray-50">
             {image ? (
-              <img 
-                src={image} 
-                alt="Preview" 
-                className="max-h-full max-w-full object-contain"
-              />
+              <img src={image} alt="Preview" className="max-h-full max-w-full object-contain" />
             ) : (
-              <span className="text-gray-500">Selecciona una imagen con texto</span>
+              <span className="text-gray-500">
+                {mode === 'text' ? 'Selecciona una imagen con texto' : 'Selecciona una imagen de dibujo'}
+              </span>
             )}
           </div>
 
@@ -354,13 +382,33 @@ export default function EmotionUploader() {
           >
             {loading ? (
               <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Procesando...
               </span>
-            ) : 'Analizar Imagen'}
+            ) : mode === 'text' ? (
+              'Analizar Imagen'
+            ) : (
+              'Analizar Dibujo'
+            )}
           </button>
 
           {error && (
@@ -372,7 +420,7 @@ export default function EmotionUploader() {
 
         {/* Results Section */}
         <div className="space-y-4">
-          {text && (
+          {text && mode === 'text' && (
             <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-bold">Texto detectado:</h3>
@@ -385,15 +433,11 @@ export default function EmotionUploader() {
           {dominantEmotion && (
             <div className="bg-white p-4 rounded-md shadow-sm border border-gray-200">
               <div className="text-center mb-4">
-                <span className="text-5xl block mb-2">
-                  {EMOTION_ICONS[dominantEmotion] || '❓'}
-                </span>
+                <span className="text-5xl block mb-2">{EMOTION_ICONS[dominantEmotion] || '❓'}</span>
                 <h3 className="text-xl font-bold">
                   {dominantEmotion.charAt(0).toUpperCase() + dominantEmotion.slice(1)}
                 </h3>
-                <p className="text-sm text-gray-500 mt-2">
-                  {getEmotionSummary(dominantEmotion)}
-                </p>
+                <p className="text-sm text-gray-500 mt-2">{getEmotionSummary(dominantEmotion)}</p>
               </div>
 
               {emotions && (
@@ -411,9 +455,7 @@ export default function EmotionUploader() {
                             style={{ width: `${score * 100}%` }}
                           />
                         </div>
-                        <span className="w-12 text-right text-sm">
-                          {(score * 100).toFixed(0)}%
-                        </span>
+                        <span className="w-12 text-right text-sm">{(score * 100).toFixed(0)}%</span>
                       </div>
                     ))}
                 </div>
@@ -429,31 +471,23 @@ export default function EmotionUploader() {
         {analyses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {analyses.map((analysis) => (
-              <div 
-                key={analysis._id} 
+              <div
+                key={analysis._id}
                 className={`border rounded-md p-4 bg-white hover:shadow-md transition-all ${
                   selectedAnalysis?._id === analysis._id ? 'ring-2 ring-blue-500 scale-[1.02]' : ''
                 }`}
               >
                 <div className="flex justify-between items-start mb-2">
-                  <div 
-                    className="flex items-start cursor-pointer" 
-                    onClick={() => loadAnalysis(analysis._id)}
-                  >
-                    <span className="text-2xl mr-2">
-                      {EMOTION_ICONS[analysis.dominantEmotion]}
-                    </span>
+                  <div className="flex items-start cursor-pointer" onClick={() => loadAnalysis(analysis._id)}>
+                    <span className="text-2xl mr-2">{EMOTION_ICONS[analysis.dominantEmotion]}</span>
                     <div>
                       <h4 className="font-medium">
-                        {analysis.dominantEmotion.charAt(0).toUpperCase() + 
-                        analysis.dominantEmotion.slice(1)}
+                        {analysis.dominantEmotion.charAt(0).toUpperCase() + analysis.dominantEmotion.slice(1)}
                       </h4>
-                      <p className="text-xs text-gray-500">
-                        {new Date(analysis.date).toLocaleString()}
-                      </p>
+                      <p className="text-xs text-gray-500">{new Date(analysis.date).toLocaleString()}</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={(e) => deleteAnalysis(analysis._id, e)}
                     className="text-red-500 hover:text-red-700 p-1"
                     disabled={loading}
@@ -465,17 +499,14 @@ export default function EmotionUploader() {
                   </button>
                 </div>
                 {analysis.imageUrl && (
-                  <img 
-                    src={analysis.imageUrl} 
-                    alt="Análisis previo" 
+                  <img
+                    src={analysis.imageUrl}
+                    alt="Análisis previo"
                     className="w-full h-32 object-contain mb-2 border rounded cursor-pointer"
                     onClick={() => loadAnalysis(analysis._id)}
                   />
                 )}
-                <p 
-                  className="text-sm line-clamp-3 cursor-pointer" 
-                  onClick={() => loadAnalysis(analysis._id)}
-                >
+                <p className="text-sm line-clamp-3 cursor-pointer" onClick={() => loadAnalysis(analysis._id)}>
                   {analysis.text}
                 </p>
               </div>
