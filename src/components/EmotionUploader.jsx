@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const API_CONFIG = {
-  ML_SERVICE: process.env.REACT_APP_ML_API || 'https://microservice-ia-production-b7cf.up.railway.app',
+  ML_SERVICE: process.env.REACT_APP_ML_API || 'https://web-production-7a2d.up.railway.app',
   BACKEND: process.env.REACT_APP_BACKEND_API || 'https://backend-production-e954.up.railway.app'
 };
 
@@ -193,6 +193,44 @@ export default function EmotionUploader() {
     } catch (err) {
       console.error("Error loading analysis:", err);
       setError("No se pudo cargar el análisis");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteAnalysis = async (id, event) => {
+    event.stopPropagation();
+    
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este análisis?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await axios.delete(`${API_CONFIG.BACKEND}/analysis/${id}`, {
+        timeout: 5000
+      });
+      
+      // Actualiza el estado local
+      setAnalyses(prev => prev.filter(item => item._id !== id));
+      
+      // Si el análisis eliminado es el que está seleccionado, limpia los resultados
+      if (selectedAnalysis?._id === id) {
+        setSelectedAnalysis(null);
+        resetResults();
+      }
+      
+      // Actualiza localStorage si es necesario
+      const saved = localStorage.getItem('emotionAnalyses');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const updated = parsed.filter(item => item._id !== id);
+        localStorage.setItem('emotionAnalyses', JSON.stringify(updated));
+      }
+      
+    } catch (err) {
+      console.error("Error deleting analysis:", err);
+      setError("No se pudo eliminar el análisis");
     } finally {
       setLoading(false);
     }
@@ -393,33 +431,53 @@ export default function EmotionUploader() {
             {analyses.map((analysis) => (
               <div 
                 key={analysis._id} 
-                className={`border rounded-md p-4 bg-white hover:shadow-md cursor-pointer transition-all ${
+                className={`border rounded-md p-4 bg-white hover:shadow-md transition-all ${
                   selectedAnalysis?._id === analysis._id ? 'ring-2 ring-blue-500 scale-[1.02]' : ''
                 }`}
-                onClick={() => loadAnalysis(analysis._id)}
               >
-                <div className="flex items-start mb-2">
-                  <span className="text-2xl mr-2">
-                    {EMOTION_ICONS[analysis.dominantEmotion]}
-                  </span>
-                  <div>
-                    <h4 className="font-medium">
-                      {analysis.dominantEmotion.charAt(0).toUpperCase() + 
-                      analysis.dominantEmotion.slice(1)}
-                    </h4>
-                    <p className="text-xs text-gray-500">
-                      {new Date(analysis.date).toLocaleString()}
-                    </p>
+                <div className="flex justify-between items-start mb-2">
+                  <div 
+                    className="flex items-start cursor-pointer" 
+                    onClick={() => loadAnalysis(analysis._id)}
+                  >
+                    <span className="text-2xl mr-2">
+                      {EMOTION_ICONS[analysis.dominantEmotion]}
+                    </span>
+                    <div>
+                      <h4 className="font-medium">
+                        {analysis.dominantEmotion.charAt(0).toUpperCase() + 
+                        analysis.dominantEmotion.slice(1)}
+                      </h4>
+                      <p className="text-xs text-gray-500">
+                        {new Date(analysis.date).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
+                  <button 
+                    onClick={(e) => deleteAnalysis(analysis._id, e)}
+                    className="text-red-500 hover:text-red-700 p-1"
+                    disabled={loading}
+                    title="Eliminar análisis"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
                 {analysis.imageUrl && (
                   <img 
                     src={analysis.imageUrl} 
                     alt="Análisis previo" 
-                    className="w-full h-32 object-contain mb-2 border rounded"
+                    className="w-full h-32 object-contain mb-2 border rounded cursor-pointer"
+                    onClick={() => loadAnalysis(analysis._id)}
                   />
                 )}
-                <p className="text-sm line-clamp-3">{analysis.text}</p>
+                <p 
+                  className="text-sm line-clamp-3 cursor-pointer" 
+                  onClick={() => loadAnalysis(analysis._id)}
+                >
+                  {analysis.text}
+                </p>
               </div>
             ))}
           </div>

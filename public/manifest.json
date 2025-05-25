@@ -1,6 +1,24 @@
 {
   "short_name": "React App",
   "name": "Create React App Sample",
+  "id": "/Frontend/",
+  "scope": "/Frontend/",
+  "start_url": "/Frontend/",
+  "description": "Mi aplicación React convertida en PWA",
+  "launch_handler": {},
+  "orientation": "portrait",
+  "screenshots": [
+    {
+      "src": "/screenshots/screen1.png",
+      "sizes": "640x480",
+      "type": "image/png"
+    },
+    {
+      "src": "/screenshots/screen2.png",
+      "sizes": "640x480",
+      "type": "image/png"
+    }
+  ],
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,7 +36,6 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"
