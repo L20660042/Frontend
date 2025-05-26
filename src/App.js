@@ -5,6 +5,7 @@ import Register from "./pages/Registro";
 import Alumno from "./pages/Alumno";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminDashboard from "./pages/Admin";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="/Usuario"
           element={
