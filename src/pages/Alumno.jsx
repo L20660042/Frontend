@@ -5,7 +5,6 @@ import {
   Menu,
   X,
   LogOut,
-  Brain,
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
@@ -37,7 +36,11 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-full overflow-hidden mr-3">
-              <Brain className="w-full h-full text-blue-600" />
+              <img
+                src={`${process.env.PUBLIC_URL}/logotipo.png`}
+                alt="Logotipo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="text-base font-medium">Emotired</span>
           </div>

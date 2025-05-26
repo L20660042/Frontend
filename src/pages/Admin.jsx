@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User, PlusCircle, Table, Upload, Menu, X, Brain } from "lucide-react";  // Asegúrate de importar el ícono Brain
+import { User, PlusCircle, Table, Upload, Menu, X } from "lucide-react"; // Removed Brain import
 import RegisterUser from "../components/Registro1"; // Componente para registrar usuario
 import Profile from "../components/Profile"; // Componente para el perfil
 import GestionarUsuarios from "../components/GestionarUsuarios"; // Componente para gestionar usuarios
@@ -25,7 +25,11 @@ export default function AdminDashboard() {
           {/* Logo + Nombre alineado a la izquierda */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-full overflow-hidden mr-3">
-              <Brain className="w-full h-full text-blue-600" /> {/* Ícono de Brain */}
+              <img
+                src={`${process.env.PUBLIC_URL}/logotipo.png`}
+                alt="Logotipo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="text-base font-medium">Emotired</span> {/* Nombre ajustado */}
           </div>

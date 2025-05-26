@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Brain } from "lucide-react";
 
 export default function NavBar() {
   return (
@@ -8,7 +7,12 @@ export default function NavBar() {
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         {/* Logo + Nombre alineado a la izquierda */}
         <div className="flex items-center gap-2 font-bold">
-          <Brain className="h-6 w-6 text-blue-600" />
+          <img
+            src={`${process.env.PUBLIC_URL}/logotipo.png`}
+            alt="Logo"
+            className="h-6 w-6 object-contain"
+            loading="lazy"
+          />
           <span>Emotired</span>
         </div>
 
