@@ -1,42 +1,22 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
-  "id": "/Frontend/",
-  "scope": "/Frontend/",
-  "start_url": "/Frontend/",
-  "description": "Mi aplicación React convertida en PWA",
-  "launch_handler": {},
-  "orientation": "portrait",
-  "screenshots": [
-    {
-      "src": "/screenshots/screen1.png",
-      "sizes": "640x480",
-      "type": "image/png"
-    },
-    {
-      "src": "/screenshots/screen2.png",
-      "sizes": "640x480",
-      "type": "image/png"
-    }
-  ],
+  "short_name": "EmoTrazos",
+  "name": "EmoTrazos",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "logotipo.png",  
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
       "src": "logotipo.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logotipo.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
+  "start_url": ".",
   "display": "standalone",
+  "background_color": "#ffffff",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "description": "EmoTrazos es una aplicación para expresar emociones a través del arte."
 }
+

@@ -42,7 +42,7 @@ export default function Dashboard() {
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="text-base font-medium">Emotired</span>
+            <span className="text-base font-medium">EmoTrazos</span>
           </div>
 
           <button

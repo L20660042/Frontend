@@ -13,7 +13,7 @@ export default function NavBar() {
             className="h-6 w-6 object-contain"
             loading="lazy"
           />
-          <span>Emotired</span>
+          <span>EmoTrazos</span>
         </div>
 
         {/* Menú horizontal y botones alineados a la derecha */}

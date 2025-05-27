@@ -31,7 +31,7 @@ export default function AdminDashboard() {
                 className="w-full h-full object-cover"
               />
             </div>
-            <span className="text-base font-medium">Emotired</span> {/* Nombre ajustado */}
+            <span className="text-base font-medium">EmoTrazos</span> {/* Nombre ajustado */}
           </div>
 
           {/* Menú hamburguesa */}
