@@ -1,9 +1,10 @@
 {
   "short_name": "EmoTrazos",
   "name": "EmoTrazos",
+  "description": "EmoTrazos es una aplicación para expresar emociones a través de escritura y dibujo.",
   "icons": [
     {
-      "src": "logotipo.png",  
+      "src": "logotipo.png",
       "sizes": "192x192",
       "type": "image/png"
     },
@@ -14,9 +15,13 @@
     }
   ],
   "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
-  "description": "EmoTrazos es una aplicación para expresar emociones a través del arte."
+  "orientation": "portrait",
+  "id": "/?homescreen=1",
+  "launch_handler": {
+    "client_mode": "auto"
+  }
 }
-
