@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Navbar from "../components/NavBar"; // adjust path as needed
 
 export default function ResetPassword() {
   const [token, setToken] = useState("");
@@ -7,7 +8,10 @@ export default function ResetPassword() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    // window.location.hash example: "#/reset-password?token=abc123"
+    const hash = window.location.hash;
+    const queryString = hash.includes("?") ? hash.substring(hash.indexOf("?")) : "";
+    const params = new URLSearchParams(queryString);
     const t = params.get("token");
     if (t) setToken(t);
     else setError("Token no proporcionado.");
@@ -43,65 +47,36 @@ export default function ResetPassword() {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: 400,
-        margin: "2rem auto",
-        padding: "1rem",
-        border: "1px solid #ccc",
-        borderRadius: 8,
-        boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        backgroundColor: "#f9f9f9",
-      }}
-    >
-      <h2 style={{ color: "#333", textAlign: "center", marginBottom: "1rem" }}>
-        Restablecer contraseña
-      </h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="password"
-          placeholder="Nueva contraseña"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          required
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            marginBottom: "1rem",
-            border: "1px solid #aaa",
-            borderRadius: 4,
-            fontSize: "1rem",
-          }}
-        />
-        <button
-          type="submit"
-          disabled={!token}
-          style={{
-            width: "100%",
-            padding: "0.5rem",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: 4,
-            fontSize: "1rem",
-            cursor: token ? "pointer" : "not-allowed",
-            opacity: token ? 1 : 0.6,
-          }}
-        >
-          Restablecer
-        </button>
-      </form>
-      {message && (
-        <p style={{ color: "green", marginTop: "1rem", textAlign: "center" }}>
-          {message}
-        </p>
-      )}
-      {error && (
-        <p style={{ color: "red", marginTop: "1rem", textAlign: "center" }}>
-          {error}
-        </p>
-      )}
+    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-600">
+      <Navbar />
+      <div className="flex items-center justify-center min-h-[80vh] px-4">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full">
+          <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Restablecer contraseña</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="password"
+              placeholder="Nueva contraseña"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              className="w-full py-2 px-4 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+            <button
+              type="submit"
+              disabled={!token}
+              className="w-full py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Restablecer
+            </button>
+          </form>
+          {message && (
+            <p className="text-green-600 text-center mt-4 font-semibold">{message}</p>
+          )}
+          {error && (
+            <p className="text-red-600 text-center mt-4 font-semibold">{error}</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
