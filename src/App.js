@@ -6,6 +6,7 @@ import Alumno from "./pages/Alumno";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminDashboard from "./pages/Admin";
 import ResetPassword from "./pages/ResetPassword";
+import RequestPasswordReset from "./pages/RequestPasswordReset";  // <--- import new page
 
 function App() {
   return (
@@ -14,7 +15,13 @@ function App() {
         <Route path="/" element={<Welcome />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
+
+        {/* Request reset email */}
+        <Route path="/request-password-reset" element={<RequestPasswordReset />} />
+
+        {/* Actual reset password page with token in URL */}
         <Route path="/reset-password" element={<ResetPassword />} />
+
         <Route
           path="/Usuario"
           element={

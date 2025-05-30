@@ -1,34 +1,41 @@
-import { useState } from "react";
-import { Button } from "../components/ui/Button";
-import Navbar from "../components/NavBar";
+import { useState, useEffect } from "react";
 
 export default function ResetPassword() {
-  const [email, setEmail] = useState("");
+  const [token, setToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const handleResetRequest = async (e) => {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get("token");
+    if (t) setToken(t);
+    else setError("Token no proporcionado.");
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setError("");
 
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setError("Por favor ingresa un correo válido");
+    if (newPassword.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/users/request-password-reset`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/users/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ token, newPassword }),
       });
 
       const data = await response.json();
+
       if (response.ok) {
-        setMessage("Si el correo existe, recibirás instrucciones para restablecer la contraseña.");
+        setMessage("Contraseña restablecida correctamente.");
       } else {
-        setError(data.message || "Error al solicitar restablecimiento.");
+        setError(data.message || "Error al restablecer la contraseña.");
       }
     } catch (err) {
       setError("Error de red. Intenta de nuevo más tarde.");
@@ -36,27 +43,23 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-900 to-blue-600">
-      <div className="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          Restablecer contraseña
-        </h2>
-        <form onSubmit={handleResetRequest} className="space-y-4">
-          <input
-            type="email"
-            value={email}
-            placeholder="Correo electrónico"
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full py-2 px-4 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
-          <Button type="submit" className="w-full py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700">
-            Solicitar restablecimiento
-          </Button>
-          {message && <p className="text-green-600 text-center">{message}</p>}
-          {error && <p className="text-red-600 text-center">{error}</p>}
-        </form>
-      </div>
+    <div style={{ maxWidth: 400, margin: "2rem auto", padding: "1rem", border: "1px solid #ccc", borderRadius: 8 }}>
+      <h2>Restablecer contraseña</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="password"
+          placeholder="Nueva contraseña"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          required
+          style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem" }}
+        />
+        <button type="submit" disabled={!token} style={{ width: "100%", padding: "0.5rem" }}>
+          Restablecer
+        </button>
+      </form>
+      {message && <p style={{ color: "green", marginTop: "1rem" }}>{message}</p>}
+      {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}
     </div>
   );
 }
