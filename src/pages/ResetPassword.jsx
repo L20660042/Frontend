@@ -43,8 +43,21 @@ export default function ResetPassword() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "2rem auto", padding: "1rem", border: "1px solid #ccc", borderRadius: 8 }}>
-      <h2>Restablecer contraseña</h2>
+    <div
+      style={{
+        maxWidth: 400,
+        margin: "2rem auto",
+        padding: "1rem",
+        border: "1px solid #ccc",
+        borderRadius: 8,
+        boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        backgroundColor: "#f9f9f9",
+      }}
+    >
+      <h2 style={{ color: "#333", textAlign: "center", marginBottom: "1rem" }}>
+        Restablecer contraseña
+      </h2>
       <form onSubmit={handleSubmit}>
         <input
           type="password"
@@ -52,14 +65,43 @@ export default function ResetPassword() {
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           required
-          style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem" }}
+          style={{
+            width: "100%",
+            padding: "0.5rem",
+            marginBottom: "1rem",
+            border: "1px solid #aaa",
+            borderRadius: 4,
+            fontSize: "1rem",
+          }}
         />
-        <button type="submit" disabled={!token} style={{ width: "100%", padding: "0.5rem" }}>
+        <button
+          type="submit"
+          disabled={!token}
+          style={{
+            width: "100%",
+            padding: "0.5rem",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: 4,
+            fontSize: "1rem",
+            cursor: token ? "pointer" : "not-allowed",
+            opacity: token ? 1 : 0.6,
+          }}
+        >
           Restablecer
         </button>
       </form>
-      {message && <p style={{ color: "green", marginTop: "1rem" }}>{message}</p>}
-      {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}
+      {message && (
+        <p style={{ color: "green", marginTop: "1rem", textAlign: "center" }}>
+          {message}
+        </p>
+      )}
+      {error && (
+        <p style={{ color: "red", marginTop: "1rem", textAlign: "center" }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import Alumno from "./pages/Alumno";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminDashboard from "./pages/Admin";
 import ResetPassword from "./pages/ResetPassword";
-import RequestPasswordReset from "./pages/RequestPasswordReset";  // <--- import new page
+import RequestPasswordReset from "./pages/RequestPasswordReset";  
 
 function App() {
   return (
