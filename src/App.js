@@ -7,21 +7,24 @@ import PrivateRoute from "./components/PrivateRoute";
 import AdminDashboard from "./pages/Admin";
 import ResetPassword from "./pages/ResetPassword";
 import RequestPasswordReset from "./pages/RequestPasswordReset";  
+import ProfilePage from "./components/Profile"; // Importamos la página del perfil
 
 function App() {
   return (
     <HashRouter>
       <Routes>
+        {/* Ruta principal de bienvenida */}
         <Route path="/" element={<Welcome />} />
+
+        {/* Ruta para login y registro */}
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Register />} />
 
-        {/* Request reset email */}
+        {/* Rutas de restablecimiento de contraseña */}
         <Route path="/request-password-reset" element={<RequestPasswordReset />} />
-
-        {/* Actual reset password page with token in URL */}
         <Route path="/reset-password" element={<ResetPassword />} />
 
+        {/* Rutas protegidas con rol USUARIO */}
         <Route
           path="/Usuario"
           element={
@@ -30,11 +33,23 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        {/* Rutas protegidas con rol ADMIN */}
         <Route
           path="/Admin"
           element={
             <PrivateRoute role="ADMIN">
               <AdminDashboard />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Ruta para el perfil de usuario */}
+        <Route
+          path="/perfil"
+          element={
+            <PrivateRoute role={["ADMIN", "USUARIO"]}>
+              <ProfilePage />
             </PrivateRoute>
           }
         />

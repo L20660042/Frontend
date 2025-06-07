@@ -4,17 +4,17 @@ const PrivateRoute = ({ children, role }) => {
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
 
-  // Si no hay token, el usuario no ha iniciado sesión
-  if (!token) {
+  if (!token || !userRole) {
     return <Navigate to="/login" />;
   }
 
-  // Si el rol del usuario no coincide con el rol esperado
-  if (userRole !== role) {
+  // Permitir array de roles válidos o rol único
+  const allowedRoles = Array.isArray(role) ? role : [role];
+
+  if (!allowedRoles.includes(userRole)) {
     return <Navigate to="/login" />;
   }
 
-  // Si pasa las validaciones, se permite el acceso a la ruta
   return children;
 };
 

@@ -1,119 +1,134 @@
 import React, { useState } from "react";
-import { User, PlusCircle, Table, Upload, Menu, X } from "lucide-react"; // Removed Brain import
-import RegisterUser from "../components/Registro1"; // Componente para registrar usuario
-import Profile from "../components/Profile"; // Componente para el perfil
-import GestionarUsuarios from "../components/GestionarUsuarios"; // Componente para gestionar usuarios
-import { useNavigate } from "react-router-dom"; // Para la navegación
+import { Link, useNavigate } from "react-router-dom";
+import { LogOut, User, UserPlus, Users } from "lucide-react";
+import { Card, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button2";
 
 export default function AdminDashboard() {
-  const [view, setView] = useState("users"); // Controla la vista actual
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // Controla el menú móvil
-  const navigate = useNavigate(); // Navegación
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Función para cerrar sesión
+  // Función para manejar el cierre de sesión
   const handleLogout = () => {
-    localStorage.removeItem("authToken"); // Elimina el token de autenticación
-    navigate("/login"); // Redirige al inicio de sesión
-    setIsMenuOpen(false); // Cierra el menú móvil
+    localStorage.removeItem("authToken");  // Remueve el token de localStorage
+    navigate("/login");  // Redirige al login
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 relative overflow-hidden">
+      {/* Fondo animado */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-blue-200/20 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-40 h-40 bg-purple-200/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-green-200/20 rounded-full blur-xl animate-pulse delay-500"></div>
+        <div className="absolute top-1/3 right-1/3 w-28 h-28 bg-yellow-200/20 rounded-full blur-xl animate-pulse delay-700"></div>
+      </div>
+
       {/* Header */}
-      <header className="bg-[rgb(31,65,155)] text-white p-3 shadow-xl border-b-2 border-[rgb(31,65,155)] fixed top-0 left-0 right-0 z-50">
-        <div className="container mx-auto px-4 flex items-center justify-between h-14">
-          {/* Logo + Nombre alineado a la izquierda */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-full overflow-hidden mr-3">
+      <div className="bg-white/90 backdrop-blur-md border-b border-blue-100 shadow-lg relative z-10">
+        <div className="max-w-6xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-center">
+            <div className="relative">
               <img
-                src={`${process.env.PUBLIC_URL}/logotipo.png`}
-                alt="Logotipo"
-                className="w-full h-full object-cover"
+                src={`${process.env.PUBLIC_URL}/logotipo2.png`} // Imagen desde la carpeta public
+                alt="EmoTrazos Logo"
+                width={70}
+                height={70}
+                className="mr-4 drop-shadow-lg"
               />
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-ping"></div>
             </div>
-            <span className="text-base font-medium">EmoTrazos</span> {/* Nombre ajustado */}
+            <div className="text-center">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
+                Admin Dashboard
+              </h1>
+              <p className="text-gray-600 text-sm mt-1">Panel de administración de EmoTrazos</p>
+            </div>
           </div>
-
-          {/* Menú hamburguesa */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
-          </button>
         </div>
-      </header>
+      </div>
 
-      {/* Sidebar */}
-      <div
-        className={`md:w-64 bg-[rgb(31,65,155)] text-white p-4 border-r-2 border-white/20 fixed top-16 left-0 bottom-0 ${
-          isMenuOpen ? "block" : "hidden"
-        } md:block shadow-md`}
-      >
-        <nav className="space-y-4">
-          <button
-            className="flex items-center space-x-3 px-2 py-2 rounded hover:bg-white/10 w-full"
-            onClick={() => {
-              setView("profile");
-              setIsMenuOpen(false);
-            }}
-          >
-            <User className="w-5 h-5" />
-            <span>Perfil</span>
-          </button>
-          <button
-            className="flex items-center space-x-3 px-2 py-2 rounded hover:bg-white/10 w-full"
-            onClick={() => {
-              setView("createUser");
-              setIsMenuOpen(false);
-            }}
-          >
-            <PlusCircle className="w-5 h-5" />
-            <span>Crear Usuario</span>
-          </button>
-          <button
-            className="flex items-center space-x-3 px-2 py-2 rounded hover:bg-white/10 w-full"
-            onClick={() => {
-              setView("users");
-              setIsMenuOpen(false);
-            }}
-          >
-            <Table className="w-5 h-5" />
-            <span>Gestionar Usuarios</span>
-          </button>
-          <button
-            className="flex items-center space-x-3 px-2 py-2 rounded hover:bg-white/10 w-full"
+      {/* Contenido principal */}
+      <div className="max-w-6xl mx-auto px-6 py-12 relative z-10">
+        <div className="text-center mb-16">
+          <div className="flex justify-center mb-6">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 rounded-full shadow-lg">
+              <Users className="w-12 h-12 text-white" />
+            </div>
+          </div>
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">Gestión de Admin y Usuarios</h2>
+          <p className="text-gray-600 text-xl max-w-2xl mx-auto leading-relaxed">
+            Administra los usuarios, tu perfil y la creación de nuevos usuarios con EmoTrazos.
+          </p>
+        </div>
+
+        {/* Tarjetas de navegación principal */}
+        <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          {/* Tarjeta Perfil Admin */}
+          <Link to="/perfil">
+            <Card className="group hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 border-0 cursor-pointer overflow-hidden relative h-[300px] flex flex-col justify-between">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardContent className="p-10 text-center text-white relative z-10">
+                <div className="bg-white/20 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-8 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110">
+                  <User className="w-12 h-12" />
+                </div>
+                <h3 className="text-3xl font-bold mb-4">Mi Perfil</h3>
+                <p className="text-blue-100 text-lg leading-relaxed mb-6">
+                  Revisa y actualiza tu perfil como administrador.
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Tarjeta Registrar Usuario */}
+          <Link to="/admin/registrar-usuario">
+            <Card className="group hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 bg-gradient-to-br from-teal-500 via-green-600 to-blue-600 border-0 cursor-pointer overflow-hidden relative h-[300px] flex flex-col justify-between">
+              <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardContent className="p-10 text-center text-white relative z-10">
+                <div className="bg-white/20 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-8 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110">
+                  <UserPlus className="w-12 h-12" />
+                </div>
+                <h3 className="text-3xl font-bold mb-4">Registrar Usuario</h3>
+                <p className="text-teal-100 text-lg leading-relaxed mb-6">
+                  Crea nuevos usuarios para el sistema.
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Tarjeta Gestionar Usuarios */}
+          <Link to="/admin/gestionar-usuarios">
+            <Card className="group hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 border-0 cursor-pointer overflow-hidden relative h-[300px] flex flex-col justify-between">
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <CardContent className="p-10 text-center text-white relative z-10">
+                <div className="bg-white/20 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-8 group-hover:bg-white/30 transition-all duration-300 group-hover:scale-110">
+                  <Users className="w-12 h-12" />
+                </div>
+                <h3 className="text-3xl font-bold mb-4">Gestionar Usuarios</h3>
+                <p className="text-pink-100 text-lg leading-relaxed mb-6">
+                  Administra, edita y elimina usuarios existentes.
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
+        {/* Botón de Cerrar sesión */}
+        <div className="flex justify-center mt-12">
+          <Button
             onClick={handleLogout}
+            variant="outline"
+            size="lg"
+            className="bg-white/90 backdrop-blur-sm border-gray-200 hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-all duration-300 px-10 py-4 text-lg shadow-lg hover:shadow-xl group"
           >
-            <Upload className="w-5 h-5" />
-            <span>Cerrar Sesión</span>
-          </button>
-        </nav>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 p-8 md:ml-64 mt-16 overflow-y-auto">
-        <div className="bg-white rounded-xl shadow-2xl p-6 border border-gray-300">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-[rgb(31,65,155)]">
-              {view === "profile"
-                ? "Perfil"
-                : view === "createUser"
-                ? "Crear Nuevo Usuario"
-                : "Gestionar Usuarios"}
-            </h2>
-          </div>
-
-          {/* Renderizar las vistas */}
-          {view === "profile" && <Profile />}
-          {view === "createUser" && <RegisterUser />}
-          {view === "users" && <GestionarUsuarios />}
+            <LogOut className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform duration-300" />
+            <span className="font-medium">Cerrar sesión</span>
+          </Button>
         </div>
       </div>
+
+      {/* Fondo decorativo */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blue-100/50 to-transparent"></div>
     </div>
   );
 }
