@@ -63,83 +63,89 @@ export default function GestionarUsuarios() {
     fetchUsers();
   }, []);
 
-  if (loading) return <p>Cargando usuarios...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (loading) return <p className="text-center text-gray-600">Cargando usuarios...</p>;
+  if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   return (
-    <div>
-      <h3 className="text-lg font-semibold text-[rgb(31,65,155)]">
-        Usuarios Registrados
-      </h3>
+    <div className="max-w-6xl mx-auto px-6 py-12">
+      <h3 className="text-3xl font-semibold text-blue-700 mb-6">Usuarios Registrados</h3>
 
+      {/* Success and error messages */}
       {successMessage && (
-        <p className="text-green-500 text-center mb-4">{successMessage}</p>
+        <p className="bg-green-200 text-green-800 p-2 rounded-md text-center mb-4">
+          {successMessage}
+        </p>
       )}
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+      {error && (
+        <p className="bg-red-200 text-red-800 p-2 rounded-md text-center mb-4">
+          {error}
+        </p>
+      )}
 
-      <table className="w-full border-collapse mt-4">
-        <thead>
-          <tr>
-            {Object.keys(users[0] || {}).map((key) => (
-              <th key={key} className="border-b-2 border-gray-300 text-left py-2">
-                {key.toUpperCase()}
-              </th>
-            ))}
-            <th className="border-b-2 border-gray-300 text-left py-2">CONTRASEÑA</th>
-            <th className="border-b-2 border-gray-300 text-left py-2">ACCIONES</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user._id}>
-              {Object.entries(user).map(([key, value]) => (
-                <td key={key} className="py-2">
-                  {key === "rol" ? (
-                    <select
-                      value={editedUsers[user._id]?.[key] ?? value}
-                      onChange={(e) =>
-                        handleEditChange(user._id, key, e.target.value)
-                      }
-                      className="border border-gray-300 p-1 rounded"
-                    >
-                      <option value="USUARIO">Usuario</option>
-                      <option value="ADMIN">Administrador</option>
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      value={editedUsers[user._id]?.[key] ?? value}
-                      onChange={(e) =>
-                        handleEditChange(user._id, key, e.target.value)
-                      }
-                      className="w-full border border-gray-300 p-1 rounded"
-                    />
-                  )}
-                </td>
+      {/* Table */}
+      <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
+        <table className="min-w-full table-auto text-sm text-left">
+          <thead className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+            <tr>
+              {Object.keys(users[0] || {}).map((key) => (
+                <th key={key} className="py-2 px-4 border-b">{key.toUpperCase()}</th>
               ))}
-              <td className="py-2">
-                <input
-                  type="password"
-                  placeholder="Nueva contraseña"
-                  value={editedUsers[user._id]?.pase || ""}
-                  onChange={(e) =>
-                    handleEditChange(user._id, "pase", e.target.value)
-                  }
-                  className="w-full border border-gray-300 p-1 rounded"
-                />
-              </td>
-              <td className="py-2">
-                <button
-                  onClick={() => handleSave(user._id)}
-                  className="bg-blue-600 text-white py-1 px-3 rounded hover:bg-blue-700"
-                >
-                  Guardar
-                </button>
-              </td>
+              <th className="py-2 px-4 border-b">CONTRASEÑA</th>
+              <th className="py-2 px-4 border-b">ACCIONES</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user._id} className="border-b hover:bg-gray-100">
+                {Object.entries(user).map(([key, value]) => (
+                  <td key={key} className="py-2 px-4">
+                    {key === "rol" ? (
+                      <select
+                        value={editedUsers[user._id]?.[key] ?? value}
+                        onChange={(e) =>
+                          handleEditChange(user._id, key, e.target.value)
+                        }
+                        className="border border-gray-300 p-1 rounded w-full"
+                      >
+                        <option value="USUARIO">Usuario</option>
+                        <option value="ADMIN">Administrador</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={editedUsers[user._id]?.[key] ?? value}
+                        onChange={(e) =>
+                          handleEditChange(user._id, key, e.target.value)
+                        }
+                        className="w-full border border-gray-300 p-1 rounded"
+                      />
+                    )}
+                  </td>
+                ))}
+                <td className="py-2 px-4">
+                  <input
+                    type="password"
+                    placeholder="Nueva contraseña"
+                    value={editedUsers[user._id]?.pase || ""}
+                    onChange={(e) =>
+                      handleEditChange(user._id, "pase", e.target.value)
+                    }
+                    className="w-full border border-gray-300 p-1 rounded"
+                  />
+                </td>
+                <td className="py-2 px-4">
+                  <button
+                    onClick={() => handleSave(user._id)}
+                    className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+                  >
+                    Guardar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

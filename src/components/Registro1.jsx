@@ -7,7 +7,7 @@ export default function RegisterUser({ onBack }) {
   const [password, setPassword] = useState(""); // Contraseña
   const [confirmPassword, setConfirmPassword] = useState(""); // Confirmar contraseña
   const [fullName, setFullName] = useState(""); // Nombre completo
-  const [role, setRole] = useState(""); // Rol del usuario
+  const [role, setRole] = useState("USUARIO"); // Rol del usuario, por defecto "USUARIO"
   const [error, setError] = useState(""); // Mensajes de error
   const [loading, setLoading] = useState(false); // Estado de carga
 
@@ -50,6 +50,7 @@ export default function RegisterUser({ onBack }) {
       <div className="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full">
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Crear Usuario</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Correo electrónico */}
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
@@ -62,6 +63,7 @@ export default function RegisterUser({ onBack }) {
             />
           </div>
 
+          {/* Contraseña */}
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
@@ -74,6 +76,7 @@ export default function RegisterUser({ onBack }) {
             />
           </div>
 
+          {/* Confirmar contraseña */}
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
@@ -86,6 +89,7 @@ export default function RegisterUser({ onBack }) {
             />
           </div>
 
+          {/* Nombre completo */}
           <div className="relative">
             <UserPlus className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
@@ -98,19 +102,23 @@ export default function RegisterUser({ onBack }) {
             />
           </div>
 
+          {/* Selección de rol */}
           <div className="relative">
             <select
               className="w-full py-2 pl-10 pr-4 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600"
               value={role}
               onChange={(e) => setRole(e.target.value)}
+              required
             >
               <option value="USUARIO">Usuario</option>
               <option value="ADMIN">Administrador</option>
             </select>
           </div>
 
+          {/* Mensajes de error */}
           <div className="text-red-500 text-center">{error && <p>{error}</p>}</div>
 
+          {/* Botones de acción */}
           <div className="space-y-2">
             <button
               type="submit"

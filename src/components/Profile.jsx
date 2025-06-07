@@ -27,7 +27,7 @@ export default function ProfilePage() {
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/users/profile`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_API}/users/profile`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -60,7 +60,7 @@ export default function ProfilePage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/profile", {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_API}/users/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -96,8 +96,8 @@ export default function ProfilePage() {
     }
   };
 
-  // Obtener el rol del usuario desde el localStorage
-  const userRole = localStorage.getItem("userRole") || "USUARIO"; // Cambié esto para asegurar que obtienes el rol correctamente
+  // Obtener el rol del usuario
+  const userRole = JSON.parse(localStorage.getItem("user"))?.role || "USUARIO"; // Asumimos que el rol está en localStorage
 
   // Redirigir al Dashboard correspondiente
   const handleGoBack = () => {
