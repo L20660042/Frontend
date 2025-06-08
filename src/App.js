@@ -10,7 +10,9 @@ import RequestPasswordReset from "./pages/RequestPasswordReset";
 import ProfilePage from "./components/Profile"; // Página de perfil
 import GestionarUsuarios from "./components/GestionarUsuarios"; // Pantalla de gestionar usuarios
 import RegisterUser from "./components/Registro1"; // Pantalla de registrar usuario
-
+import EmoTrazosApp from "./components/EmotionUploader";
+import AnalysisHistory from "./components/AnalysisHistory";
+import Resultados from "./components/Resultados";
 function App() {
   return (
     <HashRouter>
@@ -35,6 +37,31 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/Usuario/aplicacion"
+          element={
+            <PrivateRoute role="USUARIO">
+              <EmoTrazosApp />
+            </PrivateRoute>
+          }
+        />
+        <Route
+  path="/Usuario/resultados"
+  element={
+    <PrivateRoute role="USUARIO">
+      <Resultados />
+    </PrivateRoute>
+  }
+/>
+
+        <Route
+          path="/Usuario/historial"
+          element={
+            <PrivateRoute role="USUARIO">
+              <AnalysisHistory />
+            </PrivateRoute>
+          }
+        />
 
         {/* Rutas protegidas con rol ADMIN */}
         <Route
@@ -48,7 +75,7 @@ function App() {
 
         {/* Rutas protegidas con rol ADMIN para gestionar usuarios */}
         <Route
-          path="/admin/gestionar-usuarios"
+          path="/Admin/gestionar-usuarios"
           element={
             <PrivateRoute role="ADMIN">
               <GestionarUsuarios />

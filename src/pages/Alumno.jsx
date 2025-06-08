@@ -65,7 +65,7 @@ export default function EmotionDashboard() {
         {/* Tarjetas de navegación principal */}
         <div className="grid sm:grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Tarjeta Aplicación */}
-          <Link to="/aplicacion">
+          <Link to="/Usuario/aplicacion" className="text-blue-600">
             <Card className="group hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 border-0 cursor-pointer overflow-hidden relative h-[300px] flex flex-col justify-between">
               <div className="absolute inset-0 bg-gradient-to-r from-pink-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <CardContent className="p-6 text-center text-white relative z-10 flex flex-col justify-between">
@@ -81,7 +81,7 @@ export default function EmotionDashboard() {
           </Link>
 
           {/* Tarjeta Historial de Análisis */}
-          <Link to="/historial">
+          <Link to="/Usuario/historial">
             <Card className="group hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 bg-gradient-to-br from-teal-500 via-green-600 to-blue-600 border-0 cursor-pointer overflow-hidden relative h-[300px] flex flex-col justify-between">
               <div className="absolute inset-0 bg-gradient-to-r from-green-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <CardContent className="p-6 text-center text-white relative z-10 flex flex-col justify-between">
