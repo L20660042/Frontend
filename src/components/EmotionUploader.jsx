@@ -39,8 +39,19 @@ export default function EmotionUploader() {
       setServiceStatus("checking");
       const url = mode === "text" ? API_CONFIG.ML_SERVICE_TEXT : API_CONFIG.ML_SERVICE_DRAWING;
       const res = await axios.get(`${url}/health`, { timeout: 10000 });
-      setServiceStatus(res.data.model_loaded ? "available" : "loading");
-    } catch {
+      
+      // Verifica la respuesta aquí
+      console.log('Respuesta del servicio /health:', res.data);
+
+      // Asegúrate de que res.data.model_loaded existe
+      if (res.data && res.data.model_loaded) {
+        setServiceStatus("available");
+      } else {
+        setServiceStatus("unavailable");
+        setError("Modelo no cargado correctamente.");
+      }
+    } catch (err) {
+      console.error('Error al verificar el servicio:', err);
       setServiceStatus("unavailable");
       setError("Servicio no disponible");
     }
@@ -72,9 +83,11 @@ export default function EmotionUploader() {
       const endpoint = mode === "text" ? "/analyze-image" : "/analyze-drawing";
 
       const response = await axios.post(`${url}${endpoint}`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    timeout: 120000, // 120 segundos
+        headers: { "Content-Type": "multipart/form-data" },
+        timeout: 300000,
       });
+
+      console.log("Respuesta del servidor:", response.data);  // Log para ver la respuesta completa
 
       const { emotions, dominant_emotion, text, emotional_advice } = response.data.data;
 
@@ -103,8 +116,9 @@ export default function EmotionUploader() {
           advice: emotional_advice,
         },
       });
-    } catch {
-      setError("Error al analizar la imagen");
+    } catch (err) {
+      console.error("Error al analizar la imagen:", err);  // Log del error del servidor
+      setError("Error al analizar la imagen: " + (err.response ? err.response.data.detail : err.message));
     } finally {
       setLoading(false);
     }
