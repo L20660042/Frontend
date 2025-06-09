@@ -38,7 +38,7 @@ export default function EmotionUploader() {
     try {
       setServiceStatus("checking");
       const url = mode === "text" ? API_CONFIG.ML_SERVICE_TEXT : API_CONFIG.ML_SERVICE_DRAWING;
-      const res = await axios.get(`${url}/health`, { timeout: 5000 });
+      const res = await axios.get(`${url}/health`, { timeout: 10000 });
       setServiceStatus(res.data.model_loaded ? "available" : "loading");
     } catch {
       setServiceStatus("unavailable");
@@ -73,7 +73,7 @@ export default function EmotionUploader() {
 
       const response = await axios.post(`${url}${endpoint}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
-        timeout: 60000,
+        timeout: 120000,
       });
 
       const { emotions, dominant_emotion, text, emotional_advice } = response.data.data;
