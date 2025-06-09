@@ -72,8 +72,8 @@ export default function EmotionUploader() {
       const endpoint = mode === "text" ? "/analyze-image" : "/analyze-drawing";
 
       const response = await axios.post(`${url}${endpoint}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-        timeout: 120000,
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 120000, // 120 segundos
       });
 
       const { emotions, dominant_emotion, text, emotional_advice } = response.data.data;
