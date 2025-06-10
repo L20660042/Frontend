@@ -39,11 +39,7 @@ export default function EmotionUploader() {
       setServiceStatus("checking");
       const url = mode === "text" ? API_CONFIG.ML_SERVICE_TEXT : API_CONFIG.ML_SERVICE_DRAWING;
       const res = await axios.get(`${url}/health`, { timeout: 10000 });
-      
-      // Verifica la respuesta aquí
-      console.log('Respuesta del servicio /health:', res.data);
 
-      // Asegúrate de que res.data.model_loaded existe
       if (res.data && res.data.model_loaded) {
         setServiceStatus("available");
       } else {
@@ -87,15 +83,13 @@ export default function EmotionUploader() {
         timeout: 300000,
       });
 
-      console.log("Respuesta del servidor:", response.data);  // Log para ver la respuesta completa
+      const { emotions, dominant_emotion, emotional_advice } = response.data.data || response.data;
+      const text = response.data.data ? response.data.data.text : "";
 
-      const { emotions, dominant_emotion, text, emotional_advice } = response.data.data;
-
-      // 🧠 GUARDAR EN BACKEND
       try {
         await axios.post(`${API_CONFIG.BACKEND}/analysis/save`, {
           imageUrl: image,
-          text: mode === "text" ? text : "",
+          text,
           emotions,
           dominantEmotion: dominant_emotion,
         }, {
@@ -112,12 +106,12 @@ export default function EmotionUploader() {
           image,
           emotions,
           dominantEmotion: dominant_emotion,
-          text: mode === "text" ? text : "",
+          text,
           advice: emotional_advice,
         },
       });
     } catch (err) {
-      console.error("Error al analizar la imagen:", err);  // Log del error del servidor
+      console.error("Error al analizar la imagen:", err);
       setError("Error al analizar la imagen: " + (err.response ? err.response.data.detail : err.message));
     } finally {
       setLoading(false);
@@ -127,21 +121,20 @@ export default function EmotionUploader() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 p-6">
       {/* Header */}
-      <div className="bg-white/90 backdrop-blur-md border-b border-blue-100 shadow-md p-4 rounded-xl mb-8 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="bg-white/90 backdrop-blur-md border-b border-blue-100 shadow-md p-4 rounded-xl mb-8 flex items-center justify-between flex-col sm:flex-row">
+        <div className="flex items-center gap-4 mb-4 sm:mb-0">
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver
           </Button>
           <Brain className="text-blue-600 w-6 h-6" />
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Detector de Emociones
             </h1>
             <p className="text-sm text-gray-500">Análisis inteligente con IA</p>
           </div>
         </div>
-
         <div className="flex items-center gap-4">
           {serviceStatus === "available" && (
             <span className="text-green-600 font-medium flex items-center">
@@ -158,7 +151,6 @@ export default function EmotionUploader() {
               <AlertCircle className="w-4 h-4 mr-1" /> Servicio Inactivo
             </span>
           )}
-
           <Link to="/Usuario/historial">
             <Button variant="outline" className="flex items-center gap-2 hover:bg-indigo-50">
               <History className="w-4 h-4" />
@@ -168,12 +160,19 @@ export default function EmotionUploader() {
         </div>
       </div>
 
+      {/* Mensaje de recomendación */}
+      <div className="bg-white/90 p-6 rounded-xl shadow-md mb-8 text-center">
+        <p className="text-lg sm:text-xl font-medium text-gray-800">
+          Las emociones se pueden ver afectadas por el color usado, por eso se recomienda tener una variedad de colores al momento de escribir el texto o dibujo para que la persona pueda elegir el color que quiera.
+        </p>
+      </div>
+
       {/* Mode Selector */}
       <div className="flex justify-center mb-8">
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow-md border border-blue-100 flex space-x-2">
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl p-2 shadow-md border border-blue-100 flex space-x-2 sm:space-x-4 sm:flex-row flex-col">
           <button
             onClick={() => setMode("text")}
-            className={`flex items-center px-6 py-2 rounded-lg font-medium transition ${
+            className={`flex items-center px-6 py-2 rounded-lg font-medium transition w-full sm:w-auto ${
               mode === "text"
                 ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
                 : "text-gray-600 hover:bg-blue-50"
@@ -184,7 +183,7 @@ export default function EmotionUploader() {
           </button>
           <button
             onClick={() => setMode("drawing")}
-            className={`flex items-center px-6 py-2 rounded-lg font-medium transition ${
+            className={`flex items-center px-6 py-2 rounded-lg font-medium transition w-full sm:w-auto ${
               mode === "drawing"
                 ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg"
                 : "text-gray-600 hover:bg-purple-50"
@@ -206,7 +205,7 @@ export default function EmotionUploader() {
 
       {/* Upload Card */}
       <div className="max-w-lg mx-auto bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl p-6 border text-center space-y-6">
-        <h2 className="text-lg font-semibold text-gray-800 flex items-center justify-center gap-2">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center justify-center gap-2">
           <Upload className="w-5 h-5 text-blue-600" />
           Subir Imagen con {mode === "text" ? "Texto" : "Dibujo"}
         </h2>
@@ -216,9 +215,9 @@ export default function EmotionUploader() {
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
               <Upload className="text-white w-6 h-6" />
             </div>
-            <p className="text-sm font-medium text-gray-700">Arrastra una imagen con {mode === "text" ? "texto" : "dibujo"}</p>
-            <p className="text-xs text-gray-500">o haz clic para seleccionar</p>
-            <p className="text-xs text-gray-400">Formatos: JPEG, PNG • Máximo: 3MB</p>
+            <p className="text-sm sm:text-base font-medium text-gray-700">Arrastra una imagen con {mode === "text" ? "texto" : "dibujo"}</p>
+            <p className="text-xs sm:text-sm text-gray-500">o haz clic para seleccionar</p>
+            <p className="text-xs sm:text-sm text-gray-400">Formatos: JPEG, PNG • Máximo: 3MB</p>
           </div>
           <input type="file" onChange={handleFileChange} className="hidden" accept="image/jpeg,image/png" />
         </label>
